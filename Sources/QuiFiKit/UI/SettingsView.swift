@@ -34,7 +34,10 @@ public struct SettingsView: View {
                 }
                 .tag(3)
         }
-        .frame(width: 550, height: 490)
+        .padding(.top, 14)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 12)
+        .frame(width: 550, height: 500)
         .onAppear {
             isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
         }
