@@ -31,7 +31,7 @@ public struct GitHubRelease: Codable {
 
 public final class UpdateManager: ObservableObject {
     public static let shared = UpdateManager()
-    private let logger = Logger(subsystem: "org.quifi.app", category: "UpdateManager")
+    private let logger = Logger(subsystem: "com.alxkns.quifi", category: "UpdateManager")
 
     @Published public var isChecking: Bool = false
     @Published public var isUpdating: Bool = false

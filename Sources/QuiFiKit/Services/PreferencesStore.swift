@@ -3,7 +3,8 @@ import Combine
 
 public final class PreferencesStore: ObservableObject {
     public static let shared = PreferencesStore()
-    private let key = "org.quifi.preferences"
+    private let key = "com.alxkns.quifi.preferences"
+    private let legacyKey = "org.quifi.preferences"
 
     @Published public var preferences: Preferences {
         didSet {
@@ -12,7 +13,7 @@ public final class PreferencesStore: ObservableObject {
     }
 
     public init() {
-        if let data = UserDefaults.standard.data(forKey: key),
+        if let data = UserDefaults.standard.data(forKey: key) ?? UserDefaults.standard.data(forKey: legacyKey),
            let decoded = try? JSONDecoder().decode(Preferences.self, from: data) {
             self.preferences = decoded
         } else {
