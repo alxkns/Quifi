@@ -13,7 +13,7 @@ public final class SettingsWindowController: NSObject {
         }
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 440),
+            contentRect: NSRect(x: 0, y: 0, width: 550, height: 490),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -76,7 +76,7 @@ public final class MenuBarController: NSObject {
 
         if UpdateManager.shared.updateAvailable, let release = UpdateManager.shared.latestRelease {
             let updateItem = NSMenuItem(
-                title: "✨ Update auf \(release.tagName) verfügbar!",
+                title: "✨ Update to \(release.tagName) available!",
                 action: #selector(openSettings),
                 keyEquivalent: "u"
             )
@@ -84,7 +84,7 @@ public final class MenuBarController: NSObject {
             menu.addItem(updateItem)
         } else {
             let updateItem = NSMenuItem(
-                title: "Nach Updates suchen…",
+                title: "Check for Updates…",
                 action: #selector(checkForUpdatesMenu),
                 keyEquivalent: ""
             )

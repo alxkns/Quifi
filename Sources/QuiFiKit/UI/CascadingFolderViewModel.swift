@@ -61,18 +61,18 @@ public final class CascadingFolderViewModel: ObservableObject {
             }
             if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                 let hasSubs = scanner.hasSubfolders(at: docs, respectSystemHidden: prefs.respectSystemHiddenFiles)
-                fallback.append(FolderNode(name: "Dokumente", url: docs, iconName: "doc.fill", isPinnedRoot: true, hasSubfolders: hasSubs))
+                fallback.append(FolderNode(name: "Documents", url: docs, iconName: "doc.fill", isPinnedRoot: true, hasSubfolders: hasSubs))
             }
             if let desk = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
                 let hasSubs = scanner.hasSubfolders(at: desk, respectSystemHidden: prefs.respectSystemHiddenFiles)
-                fallback.append(FolderNode(name: "Schreibtisch", url: desk, iconName: "macwindow", isPinnedRoot: true, hasSubfolders: hasSubs))
+                fallback.append(FolderNode(name: "Desktop", url: desk, iconName: "macwindow", isPinnedRoot: true, hasSubfolders: hasSubs))
             }
             fallbackRoots = fallback
         } else {
             fallbackRoots = roots
         }
 
-        columns = [FolderColumn(id: "root", index: 0, title: "Favoriten", folders: fallbackRoots)]
+        columns = [FolderColumn(id: "root", index: 0, title: "Favorites", folders: fallbackRoots)]
         selectedPath = []
         hoveredTarget = nil
     }

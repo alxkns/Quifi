@@ -34,8 +34,7 @@ public struct SettingsView: View {
                 }
                 .tag(3)
         }
-        .frame(width: 530, height: 490)
-        .padding()
+        .frame(width: 550, height: 490)
         .onAppear {
             isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
         }
@@ -52,7 +51,7 @@ struct PinnedFoldersTab: View {
             Text("Pinned Root Folders")
                 .font(.headline)
 
-            Text("These folders appear as the top level in the QuiFi HUD. Hover over any folder to cascade into its subfolders.")
+            Text("These folders appear at the top level in the QuiFi HUD. Hover over any folder to cascade into its subfolders.")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
@@ -113,7 +112,8 @@ struct PinnedFoldersTab: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func addFolder() {
@@ -121,7 +121,7 @@ struct PinnedFoldersTab: View {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        panel.prompt = "Choose as Favorite"
+        panel.prompt = "Choose Favorite"
 
         if panel.runModal() == .OK {
             for url in panel.urls {
@@ -142,13 +142,14 @@ struct TriggerTab: View {
     @ObservedObject var prefsStore: PreferencesStore
 
     var body: some View {
-        Form {
-            Section {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                // Shake section
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Shake cursor (Shake-to-Show)", isOn: $prefsStore.preferences.enableShakeTrigger)
                         .font(.system(size: 13, weight: .medium))
 
-                    Text("Grab a file with the mouse and shake back and forth briefly to reveal QuiFi at your cursor.")
+                    Text("Grab a file with the cursor and shake it back and forth briefly to reveal QuiFi at your cursor.")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
@@ -168,10 +169,10 @@ struct TriggerTab: View {
                         .padding(.top, 4)
                     }
                 }
-                .padding(.vertical, 6)
 
                 Divider()
 
+                // Modifier section
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Hold modifier key while dragging", isOn: $prefsStore.preferences.enableModifierTrigger)
                         .font(.system(size: 13, weight: .medium))
@@ -190,10 +191,13 @@ struct TriggerTab: View {
                         .frame(width: 220)
                     }
                 }
-                .padding(.vertical, 6)
+
+                Spacer()
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var sensitivityLabel: String {
@@ -209,51 +213,59 @@ struct ConflictsTab: View {
     @ObservedObject var prefsStore: PreferencesStore
 
     var body: some View {
-        Form {
-            Section {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Destination File Conflicts")
-                        .font(.headline)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("Destination File Conflicts")
+                    .font(.headline)
 
-                    Picker("If a file with the same name exists:", selection: $prefsStore.preferences.conflictResolution) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("If a file with the same name already exists in destination:")
+                        .font(.system(size: 12, weight: .medium))
+
+                    Picker("", selection: $prefsStore.preferences.conflictResolution) {
                         ForEach(ConflictResolution.allCases, id: \.self) { res in
                             Text(res.rawValue).tag(res)
                         }
                     }
                     .pickerStyle(.radioGroup)
-
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Automatic rename pattern:")
-                            .font(.system(size: 12, weight: .medium))
-
-                        Picker("Format:", selection: $prefsStore.preferences.renameFormat) {
-                            ForEach(RenameFormat.allCases, id: \.self) { fmt in
-                                Text(fmt.rawValue).tag(fmt)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .frame(width: 280)
-
-                        Text("Example: 'Invoice.pdf' becomes 'Invoice_1.pdf' or 'Invoice_2026-10-16.pdf'")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    Divider()
-
-                    HStack(spacing: 8) {
-                        Image(systemName: "info.circle")
-                            .foregroundColor(.accentColor)
-                        Text("Tip: The default drop action is Move. Hold the Option (⌥) key while dropping to copy instead.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    .labelsHidden()
                 }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Automatic rename pattern:")
+                        .font(.system(size: 12, weight: .medium))
+
+                    Picker("Format:", selection: $prefsStore.preferences.renameFormat) {
+                        ForEach(RenameFormat.allCases, id: \.self) { fmt in
+                            Text(fmt.rawValue).tag(fmt)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 280)
+
+                    Text("Example: 'Invoice.pdf' becomes 'Invoice_1.pdf' or 'Invoice_2026-10-16.pdf'")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Divider()
+
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.accentColor)
+                    Text("Tip: The default drop action is Move. Hold the Option (⌥) key while dropping to copy instead.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -265,9 +277,10 @@ struct GeneralTab: View {
     @State private var isFullDiskAccessGranted: Bool = FullDiskAccessHelper.isFullDiskAccessGranted
 
     var body: some View {
-        Form {
-            Section {
-                VStack(alignment: .leading, spacing: 12) {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                // Section 1: System Integration
+                VStack(alignment: .leading, spacing: 10) {
                     Text("System Integration")
                         .font(.headline)
 
@@ -290,148 +303,156 @@ struct GeneralTab: View {
                         isOn: $prefsStore.preferences.playFeedback
                     )
 
-                    Picker("Menüleisten-Icon:", selection: $prefsStore.preferences.menuBarIconStyle) {
+                    Picker("Menu Bar Icon:", selection: $prefsStore.preferences.menuBarIconStyle) {
                         ForEach(MenuBarIconStyle.allCases, id: \.self) { style in
                             Text(style.rawValue).tag(style)
                         }
                     }
                     .pickerStyle(.menu)
+                    .frame(width: 280)
                     .onChange(of: prefsStore.preferences.menuBarIconStyle) { _ in
                         MenuBarController.shared.updateIcon()
                     }
+                }
 
-                    Divider()
+                Divider()
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Bedienungshilfen (Gesten & Shortcuts)")
-                            .font(.system(size: 13, weight: .medium))
+                // Section 2: Accessibility
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Accessibility (Gestures & Shortcuts)")
+                        .font(.system(size: 13, weight: .medium))
 
-                        Text("Wird benötigt, um globale Drag- und Tastaturevents (z. B. Command gedrückt halten) zu erkennen.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    Text("Required to detect global drag gestures and modifier keys (e.g., holding ⌘ Command).")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
-                        HStack {
+                    HStack {
+                        if isAccessibilityGranted {
+                            Label("Permission granted", systemImage: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        } else {
+                            Label("Permission required", systemImage: "xmark.circle.fill")
+                                .foregroundColor(.red)
+
+                            Button("Open System Settings") {
+                                AccessibilityHelper.openSystemAccessibilityPreferences()
+                            }
+                        }
+
+                        Spacer()
+
+                        Button("Check Status") {
+                            isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
                             if isAccessibilityGranted {
-                                Label("Berechtigung erteilt", systemImage: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                            } else {
-                                Label("Berechtigung fehlt", systemImage: "xmark.circle.fill")
-                                    .foregroundColor(.red)
-
-                                Button("In Systemeinstellungen öffnen") {
-                                    AccessibilityHelper.openSystemAccessibilityPreferences()
-                                }
-                            }
-
-                            Spacer()
-
-                            Button("Status prüfen") {
-                                isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
-                                if isAccessibilityGranted {
-                                    EventTapManager.shared.start()
-                                }
+                                EventTapManager.shared.start()
                             }
                         }
-                        .padding(.top, 4)
+                    }
+                    .padding(.top, 4)
+                }
+
+                Divider()
+
+                // Section 3: Full Disk Access
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("File Access (One-time for all folders)")
+                        .font(.system(size: 13, weight: .medium))
+
+                    Text("With Full Disk Access, QuiFi can organize files into any folder or subfolder without macOS prompting for permission every time.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    HStack {
+                        if isFullDiskAccessGranted {
+                            Label("Full Disk Access granted (no prompts)", systemImage: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        } else {
+                            Label("Limited access (prompts per folder)", systemImage: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+
+                            Button("Open Full Disk Access Settings") {
+                                FullDiskAccessHelper.openFullDiskAccessPreferences()
+                            }
+                        }
+
+                        Spacer()
+
+                        Button("Check Status") {
+                            isFullDiskAccessGranted = FullDiskAccessHelper.isFullDiskAccessGranted
+                        }
+                    }
+                    .padding(.top, 4)
+                }
+
+                Divider()
+
+                // Section 4: Software Updates
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Software Updates")
+                        .font(.system(size: 13, weight: .medium))
+
+                    Toggle(
+                        "Automatically check for updates daily",
+                        isOn: $prefsStore.preferences.autoCheckForUpdates
+                    )
+
+                    HStack {
+                        Button(action: {
+                            Task {
+                                await updateManager.checkForUpdates(manual: true)
+                            }
+                        }) {
+                            if updateManager.isChecking {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Text("Check for Updates")
+                            }
+                        }
+                        .disabled(updateManager.isChecking || updateManager.isUpdating)
+
+                        if !updateManager.statusMessage.isEmpty {
+                            Text(updateManager.statusMessage)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
 
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Dateizugriff (Einmalig für alle Ordner)")
-                            .font(.system(size: 13, weight: .medium))
-
-                        Text("Mit Festplattenvollzugriff kann QuiFi Dateien direkt in alle Ordner und Unterordner ablegen, ohne dass macOS jedes Mal für jeden Ordner separat nachfragt.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        HStack {
-                            if isFullDiskAccessGranted {
-                                Label("Vollzugriff aktiv (keine Abfragen mehr)", systemImage: "checkmark.circle.fill")
+                    if updateManager.updateAvailable, let release = updateManager.latestRelease {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Label("Version \(release.tagName) is available!", systemImage: "sparkles")
+                                    .font(.system(size: 12, weight: .bold))
                                     .foregroundColor(.green)
-                            } else {
-                                Label("Eingeschränkt (fragt pro Ordner nach)", systemImage: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.orange)
 
-                                Button("Festplattenvollzugriff öffnen") {
-                                    FullDiskAccessHelper.openFullDiskAccessPreferences()
-                                }
-                            }
+                                Spacer()
 
-                            Spacer()
-
-                            Button("Status prüfen") {
-                                isFullDiskAccessGranted = FullDiskAccessHelper.isFullDiskAccessGranted
-                            }
-                        }
-                        .padding(.top, 4)
-                    }
-
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Software-Updates")
-                            .font(.system(size: 13, weight: .medium))
-
-                        Toggle(
-                            "Täglich automatisch nach Updates suchen",
-                            isOn: $prefsStore.preferences.autoCheckForUpdates
-                        )
-
-                        HStack {
-                            Button(action: {
-                                Task {
-                                    await updateManager.checkForUpdates(manual: true)
-                                }
-                            }) {
-                                if updateManager.isChecking {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else {
-                                    Text("Nach Updates suchen")
-                                }
-                            }
-                            .disabled(updateManager.isChecking || updateManager.isUpdating)
-
-                            if !updateManager.statusMessage.isEmpty {
-                                Text(updateManager.statusMessage)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-
-                        if updateManager.updateAvailable, let release = updateManager.latestRelease {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Label("Version \(release.tagName) ist verfügbar!", systemImage: "sparkles")
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(.green)
-
-                                    Spacer()
-
-                                    Button("Jetzt aktualisieren") {
-                                        Task {
-                                            await updateManager.downloadAndInstallUpdate()
-                                        }
+                                Button("Update Now") {
+                                    Task {
+                                        await updateManager.downloadAndInstallUpdate()
                                     }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.green)
-                                    .disabled(updateManager.isUpdating)
                                 }
-
-                                if updateManager.isUpdating {
-                                    ProgressView(value: updateManager.downloadProgress)
-                                        .progressViewStyle(.linear)
-                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.green)
+                                .disabled(updateManager.isUpdating)
                             }
-                            .padding(10)
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(8)
+
+                            if updateManager.isUpdating {
+                                ProgressView(value: updateManager.downloadProgress)
+                                    .progressViewStyle(.linear)
+                            }
                         }
+                        .padding(10)
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(8)
                     }
                 }
+
+                Spacer()
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }

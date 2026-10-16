@@ -104,7 +104,7 @@ public final class UpdateManager: ObservableObject {
     public func checkForUpdates(manual: Bool = false) async {
         guard !isChecking else { return }
         isChecking = true
-        statusMessage = "Prüfe auf Updates…"
+        statusMessage = "Checking for updates…"
 
         defer {
             isChecking = false
@@ -120,7 +120,7 @@ public final class UpdateManager: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 if manual {
-                    statusMessage = "Keine Update-Informationen gefunden."
+                    statusMessage = "No update information found."
                 }
                 return
             }
@@ -130,7 +130,7 @@ public final class UpdateManager: ObservableObject {
 
             if Self.isVersion(release.tagName, newerThan: currentVersion) {
                 self.updateAvailable = true
-                self.statusMessage = "Neues Update verfügbar: \(release.tagName)!"
+                self.statusMessage = "New update available: \(release.tagName)!"
                 logger.info("[QuiFi] New update available: \(release.tagName)")
                 
                 // If checking manually or in background, update status bar menu
@@ -139,12 +139,12 @@ public final class UpdateManager: ObservableObject {
                 }
             } else {
                 self.updateAvailable = false
-                self.statusMessage = "QuiFi ist auf dem neuesten Stand (v\(currentVersion))."
+                self.statusMessage = "QuiFi is up to date (v\(currentVersion))."
             }
         } catch {
             logger.error("[QuiFi] Update check error: \(error.localizedDescription)")
             if manual {
-                statusMessage = "Fehler beim Prüfen: \(error.localizedDescription)"
+                statusMessage = "Error checking for updates: \(error.localizedDescription)"
             }
         }
     }
@@ -154,14 +154,14 @@ public final class UpdateManager: ObservableObject {
         guard let release = latestRelease, !isUpdating else { return }
         guard let asset = release.assets.first(where: { $0.name.hasSuffix(".dmg") })
                 ?? release.assets.first(where: { $0.name.hasSuffix(".zip") }) else {
-            statusMessage = "Keine passende Installationsdatei im Release gefunden."
+            statusMessage = "No compatible installer found in release."
             return
         }
 
         guard let downloadURL = URL(string: asset.browserDownloadUrl) else { return }
 
         isUpdating = true
-        statusMessage = "Lade \(asset.name) herunter…"
+        statusMessage = "Downloading \(asset.name)…"
         downloadProgress = 0.1
 
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("QuiFi_Update_\(UUID().uuidString)")
@@ -172,7 +172,7 @@ public final class UpdateManager: ObservableObject {
             let (tempLocalURL, _) = try await URLSession.shared.download(from: downloadURL)
             try FileManager.default.moveItem(at: tempLocalURL, to: destinationFile)
             downloadProgress = 0.7
-            statusMessage = "Installiere Update…"
+            statusMessage = "Installing update…"
 
             if asset.name.hasSuffix(".dmg") {
                 try installFromDMG(dmgPath: destinationFile, tempDir: tempDir)
@@ -181,12 +181,12 @@ public final class UpdateManager: ObservableObject {
             }
 
             downloadProgress = 1.0
-            statusMessage = "Update erfolgreich! QuiFi wird neu gestartet…"
+            statusMessage = "Update successful! Relaunching QuiFi…"
 
             relaunchApp()
         } catch {
             logger.error("[QuiFi] Install failed: \(error.localizedDescription)")
-            statusMessage = "Installation fehlgeschlagen: \(error.localizedDescription)"
+            statusMessage = "Installation failed: \(error.localizedDescription)"
             isUpdating = false
         }
     }
@@ -226,7 +226,7 @@ public final class UpdateManager: ObservableObject {
             try? xattrProcess.run()
             xattrProcess.waitUntilExit()
         } else {
-            throw NSError(domain: "QuiFiUpdate", code: 404, userInfo: [NSLocalizedDescriptionKey: "QuiFi.app im Disk-Image nicht gefunden."])
+            throw NSError(domain: "QuiFiUpdate", code: 404, userInfo: [NSLocalizedDescriptionKey: "QuiFi.app not found in disk image."])
         }
     }
 
@@ -256,7 +256,7 @@ public final class UpdateManager: ObservableObject {
             try? xattrProcess.run()
             xattrProcess.waitUntilExit()
         } else {
-            throw NSError(domain: "QuiFiUpdate", code: 404, userInfo: [NSLocalizedDescriptionKey: "QuiFi.app im Zip-Archiv nicht gefunden."])
+            throw NSError(domain: "QuiFiUpdate", code: 404, userInfo: [NSLocalizedDescriptionKey: "QuiFi.app not found in zip archive."])
         }
     }
 

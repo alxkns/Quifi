@@ -232,7 +232,7 @@ public final class HUDWindowController: NSObject {
                 backing: .buffered,
                 defer: false
             )
-            window.title = "QuiFi: Dateikonflikt"
+            window.title = "QuiFi: File Conflict"
             window.center()
             window.level = .floating
 
