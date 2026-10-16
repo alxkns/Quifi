@@ -41,12 +41,14 @@ public final class CascadingFolderViewModel: ObservableObject {
         let prefs = prefsStore.preferences
         let roots = prefs.pinnedFolders.compactMap { folder -> FolderNode? in
             guard folder.exists else { return nil }
+            let hasSubs = scanner.hasSubfolders(at: folder.url, respectSystemHidden: prefs.respectSystemHiddenFiles)
             return FolderNode(
                 name: folder.name,
                 url: folder.url,
                 iconName: folder.iconName,
                 isPinnedRoot: true,
-                depth: 0
+                depth: 0,
+                hasSubfolders: hasSubs
             )
         }
 
@@ -54,13 +56,16 @@ public final class CascadingFolderViewModel: ObservableObject {
         if roots.isEmpty {
             var fallback: [FolderNode] = []
             if let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first {
-                fallback.append(FolderNode(name: "Downloads", url: downloads, iconName: "arrow.down.circle.fill", isPinnedRoot: true))
+                let hasSubs = scanner.hasSubfolders(at: downloads, respectSystemHidden: prefs.respectSystemHiddenFiles)
+                fallback.append(FolderNode(name: "Downloads", url: downloads, iconName: "arrow.down.circle.fill", isPinnedRoot: true, hasSubfolders: hasSubs))
             }
             if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                fallback.append(FolderNode(name: "Dokumente", url: docs, iconName: "doc.fill", isPinnedRoot: true))
+                let hasSubs = scanner.hasSubfolders(at: docs, respectSystemHidden: prefs.respectSystemHiddenFiles)
+                fallback.append(FolderNode(name: "Dokumente", url: docs, iconName: "doc.fill", isPinnedRoot: true, hasSubfolders: hasSubs))
             }
             if let desk = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
-                fallback.append(FolderNode(name: "Schreibtisch", url: desk, iconName: "macwindow", isPinnedRoot: true))
+                let hasSubs = scanner.hasSubfolders(at: desk, respectSystemHidden: prefs.respectSystemHiddenFiles)
+                fallback.append(FolderNode(name: "Schreibtisch", url: desk, iconName: "macwindow", isPinnedRoot: true, hasSubfolders: hasSubs))
             }
             fallbackRoots = fallback
         } else {
@@ -92,11 +97,13 @@ public final class CascadingFolderViewModel: ObservableObject {
 
     public func expandNode(_ node: FolderNode, atColumnIndex columnIndex: Int) {
         let prefs = prefsStore.preferences
-        let subfolders = scanner.subfolders(
-            at: node.url,
-            depth: columnIndex + 1,
-            respectSystemHidden: prefs.respectSystemHiddenFiles
-        )
+        let subfolders = node.hasSubfolders
+            ? scanner.subfolders(
+                at: node.url,
+                depth: columnIndex + 1,
+                respectSystemHidden: prefs.respectSystemHiddenFiles
+            )
+            : []
 
         // Truncate selected path to current column
         if selectedPath.count > columnIndex {

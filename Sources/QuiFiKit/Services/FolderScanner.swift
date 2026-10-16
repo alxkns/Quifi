@@ -23,12 +23,52 @@ public final class FolderScanner {
         return false
     }
 
+    /// Efficiently checks whether a directory contains at least one child directory.
+    public func hasSubfolders(at url: URL, respectSystemHidden: Bool = true) -> Bool {
+        let fileManager = FileManager.default
+        let showHidden = respectSystemHidden ? isFinderShowingHiddenFiles : false
+
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isHiddenKey, .isPackageKey]
+        let options: FileManager.DirectoryEnumerationOptions = showHidden ? [] : [.skipsHiddenFiles]
+
+        guard let contents = try? fileManager.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: options
+        ) else {
+            return false
+        }
+
+        for itemURL in contents {
+            if !showHidden && itemURL.lastPathComponent.hasPrefix(".") {
+                continue
+            }
+
+            guard let resourceValues = try? itemURL.resourceValues(forKeys: Set(keys)),
+                  let isDir = resourceValues.isDirectory, isDir else {
+                continue
+            }
+
+            if let isPackage = resourceValues.isPackage, isPackage {
+                continue
+            }
+
+            if !showHidden, let isHidden = resourceValues.isHidden, isHidden {
+                continue
+            }
+
+            return true
+        }
+
+        return false
+    }
+
     /// Fetches all immediate child directories for a given URL.
     public func subfolders(at url: URL, depth: Int = 0, respectSystemHidden: Bool = true) -> [FolderNode] {
         let fileManager = FileManager.default
         let showHidden = respectSystemHidden ? isFinderShowingHiddenFiles : false
 
-        let keys: [URLResourceKey] = [.isDirectoryKey, .isHiddenKey]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isHiddenKey, .isPackageKey]
         let options: FileManager.DirectoryEnumerationOptions = showHidden ? [] : [.skipsHiddenFiles]
 
         guard let contents = try? fileManager.contentsOfDirectory(
@@ -52,9 +92,15 @@ public final class FolderScanner {
                 continue
             }
 
+            if let isPackage = resourceValues.isPackage, isPackage {
+                continue
+            }
+
             if !showHidden, let isHidden = resourceValues.isHidden, isHidden {
                 continue
             }
+
+            let hasSubs = hasSubfolders(at: itemURL, respectSystemHidden: respectSystemHidden)
 
             folders.append(
                 FolderNode(
@@ -62,7 +108,8 @@ public final class FolderScanner {
                     url: itemURL,
                     iconName: "folder.fill",
                     isPinnedRoot: false,
-                    depth: depth
+                    depth: depth,
+                    hasSubfolders: hasSubs
                 )
             )
         }

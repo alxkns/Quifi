@@ -154,9 +154,11 @@ struct FolderRowView: View {
 
             Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 8, weight: .bold))
-                .foregroundColor(.secondary.opacity(0.4))
+            if node.hasSubfolders {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(.secondary.opacity(0.4))
+            }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)

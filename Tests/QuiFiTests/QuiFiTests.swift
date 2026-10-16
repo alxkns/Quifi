@@ -88,12 +88,15 @@ struct QuiFiTests {
         try FileManager.default.createDirectory(at: folder2024, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: folder2026, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: hiddenFolder, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: folder2024.appendingPathComponent("Q1"), withIntermediateDirectories: true)
 
         let subfolders = scanner.subfolders(at: tempDir, depth: 0, respectSystemHidden: false)
         let names = subfolders.map(\.name)
 
         #expect(names == ["2024", "2025", "2026"])
         #expect(!names.contains(".hidden"))
+        #expect(subfolders.first(where: { $0.name == "2024" })?.hasSubfolders == true)
+        #expect(subfolders.first(where: { $0.name == "2025" })?.hasSubfolders == false)
     }
 
     @Test func versionComparison() {
