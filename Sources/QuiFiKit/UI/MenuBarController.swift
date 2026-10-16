@@ -73,6 +73,24 @@ public final class MenuBarController: NSObject {
         settingsItem.target = self
         menu.addItem(settingsItem)
 
+        if UpdateManager.shared.updateAvailable, let release = UpdateManager.shared.latestRelease {
+            let updateItem = NSMenuItem(
+                title: "✨ Update auf \(release.tagName) verfügbar!",
+                action: #selector(openSettings),
+                keyEquivalent: "u"
+            )
+            updateItem.target = self
+            menu.addItem(updateItem)
+        } else {
+            let updateItem = NSMenuItem(
+                title: "Nach Updates suchen…",
+                action: #selector(checkForUpdatesMenu),
+                keyEquivalent: ""
+            )
+            updateItem.target = self
+            menu.addItem(updateItem)
+        }
+
         menu.addItem(NSMenuItem.separator())
 
         let accessStatus = AccessibilityHelper.isAccessibilityGranted
@@ -105,6 +123,13 @@ public final class MenuBarController: NSObject {
 
     @objc private func openSettings() {
         SettingsWindowController.shared.show()
+    }
+
+    @objc private func checkForUpdatesMenu() {
+        SettingsWindowController.shared.show()
+        Task {
+            await UpdateManager.shared.checkForUpdates(manual: true)
+        }
     }
 
     @objc private func requestAccessibility() {

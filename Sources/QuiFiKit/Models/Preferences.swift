@@ -70,6 +70,8 @@ public struct Preferences: Codable, Equatable {
     public var renameFormat: RenameFormat
     public var respectSystemHiddenFiles: Bool
     public var playFeedback: Bool
+    public var autoCheckForUpdates: Bool
+    public var lastUpdateCheck: Date?
 
     public static let `default`: Preferences = {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
@@ -100,7 +102,9 @@ public struct Preferences: Codable, Equatable {
             conflictResolution: .ask,
             renameFormat: .counter,
             respectSystemHiddenFiles: true,
-            playFeedback: true
+            playFeedback: true,
+            autoCheckForUpdates: true,
+            lastUpdateCheck: nil
         )
     }()
 }

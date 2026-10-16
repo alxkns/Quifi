@@ -34,7 +34,7 @@ public struct SettingsView: View {
                 }
                 .tag(3)
         }
-        .frame(width: 520, height: 420)
+        .frame(width: 530, height: 490)
         .padding()
         .onAppear {
             isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
@@ -261,6 +261,7 @@ struct ConflictsTab: View {
 struct GeneralTab: View {
     @ObservedObject var prefsStore: PreferencesStore
     @Binding var isAccessibilityGranted: Bool
+    @ObservedObject var updateManager = UpdateManager.shared
 
     var body: some View {
         Form {
@@ -321,6 +322,69 @@ struct GeneralTab: View {
                             }
                         }
                         .padding(.top, 4)
+                    }
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Software-Updates")
+                            .font(.system(size: 13, weight: .medium))
+
+                        Toggle(
+                            "Täglich automatisch nach Updates suchen",
+                            isOn: $prefsStore.preferences.autoCheckForUpdates
+                        )
+
+                        HStack {
+                            Button(action: {
+                                Task {
+                                    await updateManager.checkForUpdates(manual: true)
+                                }
+                            }) {
+                                if updateManager.isChecking {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Text("Nach Updates suchen")
+                                }
+                            }
+                            .disabled(updateManager.isChecking || updateManager.isUpdating)
+
+                            if !updateManager.statusMessage.isEmpty {
+                                Text(updateManager.statusMessage)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        if updateManager.updateAvailable, let release = updateManager.latestRelease {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Label("Version \(release.tagName) ist verfügbar!", systemImage: "sparkles")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.green)
+
+                                    Spacer()
+
+                                    Button("Jetzt aktualisieren") {
+                                        Task {
+                                            await updateManager.downloadAndInstallUpdate()
+                                        }
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
+                                    .disabled(updateManager.isUpdating)
+                                }
+
+                                if updateManager.isUpdating {
+                                    ProgressView(value: updateManager.downloadProgress)
+                                        .progressViewStyle(.linear)
+                                }
+                            }
+                            .padding(10)
+                            .background(Color.green.opacity(0.1))
+                            .cornerRadius(8)
+                        }
                     }
                 }
             }

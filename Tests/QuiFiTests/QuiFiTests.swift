@@ -95,4 +95,13 @@ struct QuiFiTests {
         #expect(names == ["2024", "2025", "2026"])
         #expect(!names.contains(".hidden"))
     }
+
+    @Test func versionComparison() {
+        #expect(UpdateManager.isVersion("v1.0.1", newerThan: "1.0.0"))
+        #expect(UpdateManager.isVersion("1.1.0", newerThan: "1.0.9"))
+        #expect(UpdateManager.isVersion("2.0.0", newerThan: "1.9.9"))
+        #expect(!UpdateManager.isVersion("1.0.0", newerThan: "1.0.0"))
+        #expect(!UpdateManager.isVersion("1.0.0", newerThan: "1.0.1"))
+        #expect(!UpdateManager.isVersion("0.9.9", newerThan: "1.0.0"))
+    }
 }
