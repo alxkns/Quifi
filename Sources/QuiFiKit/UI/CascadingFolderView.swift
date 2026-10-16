@@ -10,11 +10,7 @@ public struct CascadingFolderView: View {
     }
 
     private var cardWidth: CGFloat {
-        let count = CGFloat(max(1, viewModel.columns.count))
-        let colWidth: CGFloat = 185
-        let spacing: CGFloat = 10
-        let horizontalPadding: CGFloat = 24
-        return (count * colWidth) + ((count - 1) * spacing) + horizontalPadding
+        HUDLayout.cardWidth(forColumnCount: viewModel.columns.count)
     }
 
     public var body: some View {
@@ -37,12 +33,12 @@ public struct CascadingFolderView: View {
                     .font(.system(size: 10, weight: .regular))
                     .foregroundColor(viewModel.isCopyMode ? .green.opacity(0.8) : .secondary.opacity(0.6))
             }
-            .padding(.horizontal, 14)
-            .padding(.top, 10)
+            .padding(.horizontal, HUDLayout.cardPaddingHorizontal)
+            .padding(.top, HUDLayout.cardPaddingTop)
             .padding(.bottom, 2)
 
             // Flowy, auto-expanding Miller-Columns
-            HStack(alignment: .top, spacing: 10) {
+            HStack(alignment: .top, spacing: HUDLayout.columnSpacing) {
                 ForEach(viewModel.columns) { column in
                     FolderColumnView(
                         columnIndex: column.index,
@@ -63,8 +59,8 @@ public struct CascadingFolderView: View {
                     ))
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 12)
+            .padding(.horizontal, HUDLayout.cardPaddingHorizontal)
+            .padding(.bottom, HUDLayout.cardPaddingBottom)
             .animation(.spring(response: 0.30, dampingFraction: 0.88), value: viewModel.columns.map(\.id))
         }
         .frame(width: cardWidth, alignment: .topLeading)
@@ -122,10 +118,10 @@ struct FolderColumnView: View {
                 }
                 .padding(2)
             }
-            .frame(maxHeight: 280)
+            .frame(maxHeight: HUDLayout.columnScrollMaxHeight)
         }
-        .frame(width: 185)
         .padding(6)
+        .frame(width: HUDLayout.columnWidth)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color(nsColor: .controlBackgroundColor).opacity(0.35))

@@ -21,8 +21,8 @@ public final class HUDWindowController: NSObject {
     }
 
     private func setupPanel() {
-        let initialWidth: CGFloat = 220
-        let initialHeight: CGFloat = 330
+        let initialWidth = HUDLayout.cardWidth(forColumnCount: 1)
+        let initialHeight = HUDLayout.targetHeight
 
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: initialWidth, height: initialHeight),
@@ -69,7 +69,7 @@ public final class HUDWindowController: NSObject {
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
 
         // Anchor position for column 0
-        let initialWidth: CGFloat = 185 + 24
+        let initialWidth = HUDLayout.cardWidth(forColumnCount: 1)
         var anchorX = mouseLocation.x + 18
         if anchorX + initialWidth > visible.maxX - 16 {
             anchorX = visible.maxX - 16 - initialWidth
@@ -122,12 +122,8 @@ public final class HUDWindowController: NSObject {
         shrinkTimer = nil
 
         let count = max(1, columnCount)
-        let colWidth: CGFloat = 185
-        let spacing: CGFloat = 10
-        let horizontalPadding: CGFloat = 24
-        let targetHeight: CGFloat = 330
-
-        let targetWidth = (CGFloat(count) * colWidth) + (CGFloat(count - 1) * spacing) + horizontalPadding
+        let targetWidth = HUDLayout.cardWidth(forColumnCount: count)
+        let targetHeight = HUDLayout.targetHeight
 
         let screen = NSScreen.screens.first(where: { NSPointInRect(initialMouseLocation, $0.frame) }) ?? NSScreen.main
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
@@ -171,7 +167,7 @@ public final class HUDWindowController: NSObject {
                 shrinkTimer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: false) { [weak self, weak panel] _ in
                     guard let self = self, let panel = panel, panel.isVisible else { return }
                     let currentCount = max(1, self.viewModel.columns.count)
-                    let currentWidth = (CGFloat(currentCount) * colWidth) + (CGFloat(currentCount - 1) * spacing) + horizontalPadding
+                    let currentWidth = HUDLayout.cardWidth(forColumnCount: currentCount)
                     var currX = self.anchoredOriginX
                     if currX + currentWidth > maxRight {
                         currX = maxRight - currentWidth
