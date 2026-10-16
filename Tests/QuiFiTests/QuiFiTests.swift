@@ -104,4 +104,35 @@ struct QuiFiTests {
         #expect(!UpdateManager.isVersion("1.0.0", newerThan: "1.0.1"))
         #expect(!UpdateManager.isVersion("0.9.9", newerThan: "1.0.0"))
     }
+
+    @Test func menuBarIcons() {
+        for style in MenuBarIconStyle.allCases {
+            let icon = MenuBarIconHelper.icon(for: style)
+            #expect(icon.isTemplate)
+            #expect(icon.size.width > 0)
+        }
+    }
+
+    @Test func preferencesBackwardCompatibility() throws {
+        // Old JSON without menuBarIconStyle
+        let legacyJSON = """
+        {
+            "pinnedFolders": [],
+            "enableShakeTrigger": true,
+            "shakeSensitivity": 30.0,
+            "enableModifierTrigger": true,
+            "triggerModifier": "⌘ Command",
+            "copyModifier": "⌥ Option",
+            "conflictResolution": "Ask what to do",
+            "renameFormat": "Counter: {name}_{counter}",
+            "respectSystemHiddenFiles": true,
+            "playFeedback": true,
+            "autoCheckForUpdates": true
+        }
+        """.data(using: .utf8)!
+
+        let prefs = try JSONDecoder().decode(Preferences.self, from: legacyJSON)
+        #expect(prefs.menuBarIconStyle == .quifiLightning)
+        #expect(prefs.shakeSensitivity == 30.0)
+    }
 }

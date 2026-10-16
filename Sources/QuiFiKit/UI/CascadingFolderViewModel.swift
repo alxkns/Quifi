@@ -2,8 +2,26 @@ import Foundation
 import Combine
 import AppKit
 
+public struct FolderColumn: Identifiable, Equatable {
+    public let id: String
+    public let index: Int
+    public let title: String
+    public let folders: [FolderNode]
+
+    public init(id: String, index: Int, title: String, folders: [FolderNode]) {
+        self.id = id
+        self.index = index
+        self.title = title
+        self.folders = folders
+    }
+
+    public static func == (lhs: FolderColumn, rhs: FolderColumn) -> Bool {
+        lhs.id == rhs.id && lhs.folders == rhs.folders
+    }
+}
+
 public final class CascadingFolderViewModel: ObservableObject {
-    @Published public var columns: [[FolderNode]] = []
+    @Published public var columns: [FolderColumn] = []
     @Published public var selectedPath: [FolderNode] = []
     @Published public var hoveredTarget: FolderNode?
     @Published public var isCopyMode: Bool = false
@@ -30,6 +48,8 @@ public final class CascadingFolderViewModel: ObservableObject {
                 depth: 0
             )
         }
+
+        let fallbackRoots: [FolderNode]
         if roots.isEmpty {
             var fallback: [FolderNode] = []
             if let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first {
@@ -41,10 +61,12 @@ public final class CascadingFolderViewModel: ObservableObject {
             if let desk = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
                 fallback.append(FolderNode(name: "Schreibtisch", url: desk, iconName: "macwindow", isPinnedRoot: true))
             }
-            columns = [fallback]
+            fallbackRoots = fallback
         } else {
-            columns = [roots]
+            fallbackRoots = roots
         }
+
+        columns = [FolderColumn(id: "root", index: 0, title: "Favoriten", folders: fallbackRoots)]
         selectedPath = []
         hoveredTarget = nil
     }
@@ -52,11 +74,16 @@ public final class CascadingFolderViewModel: ObservableObject {
     public func hoverOver(node: FolderNode, atColumnIndex columnIndex: Int) {
         hoveredTarget = node
 
-        // Cancel previous timer
+        // If already expanded at this depth, do not restart timer or re-expand
+        if selectedPath.indices.contains(columnIndex), selectedPath[columnIndex].id == node.id {
+            return
+        }
+
+        // Cancel previous pending hover
         hoverTimer?.invalidate()
 
-        // Immediate or snappy 120ms expansion of child folders
-        hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.12, repeats: false) { [weak self] _ in
+        // Deliberate 220ms hover dwell: comfortable, prevents jumping when sweeping across rows
+        hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.22, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             self.expandNode(node, atColumnIndex: columnIndex)
         }
@@ -76,10 +103,15 @@ public final class CascadingFolderViewModel: ObservableObject {
         }
         selectedPath.append(node)
 
-        // Truncate columns after current column
+        // Truncate columns up to current column
         var newColumns = Array(columns.prefix(columnIndex + 1))
         if !subfolders.isEmpty {
-            newColumns.append(subfolders)
+            newColumns.append(FolderColumn(
+                id: node.url.path,
+                index: columnIndex + 1,
+                title: node.name,
+                folders: subfolders
+            ))
         }
         self.columns = newColumns
     }

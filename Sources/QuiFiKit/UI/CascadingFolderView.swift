@@ -37,29 +37,29 @@ public struct CascadingFolderView: View {
 
             // Flowy, auto-expanding Miller-Columns
             HStack(alignment: .top, spacing: 10) {
-                ForEach(Array(viewModel.columns.enumerated()), id: \.offset) { colIndex, folders in
+                ForEach(viewModel.columns) { column in
                     FolderColumnView(
-                        columnIndex: colIndex,
-                        columnTitle: titleForColumn(colIndex),
-                        folders: folders,
-                        selectedNode: colIndex < viewModel.selectedPath.count ? viewModel.selectedPath[colIndex] : nil,
+                        columnIndex: column.index,
+                        columnTitle: column.title,
+                        folders: column.folders,
+                        selectedNode: column.index < viewModel.selectedPath.count ? viewModel.selectedPath[column.index] : nil,
                         hoveredNode: viewModel.hoveredTarget,
                         onHover: { node in
-                            viewModel.hoverOver(node: node, atColumnIndex: colIndex)
+                            viewModel.hoverOver(node: node, atColumnIndex: column.index)
                         },
                         onDrop: { urls, node in
                             onDropFilesToFolder?(urls, node)
                         }
                     )
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        insertion: .opacity.combined(with: .offset(x: 18)),
                         removal: .opacity
                     ))
                 }
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
-            .animation(.spring(response: 0.28, dampingFraction: 0.82), value: viewModel.columns.count)
+            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: viewModel.columns.map(\.id))
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -70,16 +70,6 @@ public struct CascadingFolderView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.white.opacity(0.18), lineWidth: 1)
         )
-    }
-
-    private func titleForColumn(_ index: Int) -> String {
-        if index == 0 {
-            return "Favoriten"
-        }
-        if index - 1 < viewModel.selectedPath.count {
-            return viewModel.selectedPath[index - 1].name
-        }
-        return "Unterordner"
     }
 }
 
@@ -171,10 +161,12 @@ struct FolderRowView: View {
                         ? Color.accentColor.opacity(0.22)
                         : (isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
                 )
+                .animation(.easeOut(duration: 0.16), value: isHovered)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .stroke(isHovered ? Color.accentColor.opacity(0.35) : Color.clear, lineWidth: 1)
+                .animation(.easeOut(duration: 0.16), value: isHovered)
         )
         .contentShape(Rectangle())
         .onHover { isOver in

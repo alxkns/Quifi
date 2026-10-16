@@ -59,6 +59,14 @@ public enum RenameFormat: String, Codable, CaseIterable {
     }
 }
 
+public enum MenuBarIconStyle: String, Codable, CaseIterable {
+    case quifiLightning = "QuiFi Lightning"
+    case folderSparkles = "Folder & Sparkles"
+    case dropTray = "Drop Tray"
+    case cascadingStack = "Cascading Stack"
+    case speedArrow = "Speed Arrow"
+}
+
 public struct Preferences: Codable, Equatable {
     public var pinnedFolders: [PinnedFolder]
     public var enableShakeTrigger: Bool
@@ -72,6 +80,54 @@ public struct Preferences: Codable, Equatable {
     public var playFeedback: Bool
     public var autoCheckForUpdates: Bool
     public var lastUpdateCheck: Date?
+    public var menuBarIconStyle: MenuBarIconStyle
+
+    public init(
+        pinnedFolders: [PinnedFolder],
+        enableShakeTrigger: Bool,
+        shakeSensitivity: Double,
+        enableModifierTrigger: Bool,
+        triggerModifier: TriggerModifier,
+        copyModifier: TriggerModifier,
+        conflictResolution: ConflictResolution,
+        renameFormat: RenameFormat,
+        respectSystemHiddenFiles: Bool,
+        playFeedback: Bool,
+        autoCheckForUpdates: Bool,
+        lastUpdateCheck: Date? = nil,
+        menuBarIconStyle: MenuBarIconStyle = .quifiLightning
+    ) {
+        self.pinnedFolders = pinnedFolders
+        self.enableShakeTrigger = enableShakeTrigger
+        self.shakeSensitivity = shakeSensitivity
+        self.enableModifierTrigger = enableModifierTrigger
+        self.triggerModifier = triggerModifier
+        self.copyModifier = copyModifier
+        self.conflictResolution = conflictResolution
+        self.renameFormat = renameFormat
+        self.respectSystemHiddenFiles = respectSystemHiddenFiles
+        self.playFeedback = playFeedback
+        self.autoCheckForUpdates = autoCheckForUpdates
+        self.lastUpdateCheck = lastUpdateCheck
+        self.menuBarIconStyle = menuBarIconStyle
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.pinnedFolders = try container.decodeIfPresent([PinnedFolder].self, forKey: .pinnedFolders) ?? Preferences.default.pinnedFolders
+        self.enableShakeTrigger = try container.decodeIfPresent(Bool.self, forKey: .enableShakeTrigger) ?? true
+        self.shakeSensitivity = try container.decodeIfPresent(Double.self, forKey: .shakeSensitivity) ?? 35.0
+        self.enableModifierTrigger = try container.decodeIfPresent(Bool.self, forKey: .enableModifierTrigger) ?? true
+        self.triggerModifier = try container.decodeIfPresent(TriggerModifier.self, forKey: .triggerModifier) ?? .command
+        self.copyModifier = try container.decodeIfPresent(TriggerModifier.self, forKey: .copyModifier) ?? .option
+        self.conflictResolution = try container.decodeIfPresent(ConflictResolution.self, forKey: .conflictResolution) ?? .ask
+        self.renameFormat = try container.decodeIfPresent(RenameFormat.self, forKey: .renameFormat) ?? .counter
+        self.respectSystemHiddenFiles = try container.decodeIfPresent(Bool.self, forKey: .respectSystemHiddenFiles) ?? true
+        self.playFeedback = try container.decodeIfPresent(Bool.self, forKey: .playFeedback) ?? true
+        self.autoCheckForUpdates = try container.decodeIfPresent(Bool.self, forKey: .autoCheckForUpdates) ?? true
+        self.lastUpdateCheck = try container.decodeIfPresent(Date.self, forKey: .lastUpdateCheck)
+        self.menuBarIconStyle = try container.decodeIfPresent(MenuBarIconStyle.self, forKey: .menuBarIconStyle) ?? .quifiLightning
+    }
 
     public static let `default`: Preferences = {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
@@ -104,7 +160,8 @@ public struct Preferences: Codable, Equatable {
             respectSystemHiddenFiles: true,
             playFeedback: true,
             autoCheckForUpdates: true,
-            lastUpdateCheck: nil
+            lastUpdateCheck: nil,
+            menuBarIconStyle: .quifiLightning
         )
     }()
 }

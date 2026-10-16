@@ -36,16 +36,17 @@ public final class MenuBarController: NSObject {
 
     public func setup() {
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-        if let button = statusItem.button {
-            button.image = NSImage(
-                systemSymbolName: "folder.badge.gearshape",
-                accessibilityDescription: "QuiFi - Quick File Organizer"
-            )
-        }
-
         self.statusItem = statusItem
+
+        updateIcon()
         updateMenu()
+    }
+
+    public func updateIcon() {
+        let style = PreferencesStore.shared.preferences.menuBarIconStyle
+        if let button = statusItem?.button {
+            button.image = MenuBarIconHelper.icon(for: style)
+        }
     }
 
     public func updateMenu() {

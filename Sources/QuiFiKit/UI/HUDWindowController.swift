@@ -67,15 +67,31 @@ public final class HUDWindowController: NSObject {
 
         updateLayoutForColumns(columnCount: viewModel.columns.count, animated: false)
 
-        panel.alphaValue = 1.0
+        panel.alphaValue = 0.0
         panel.orderFrontRegardless()
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 1.0
+        }
     }
 
     public func hide() {
         logger.info("[QuiFi] Hiding HUD panel")
-        panel?.orderOut(nil)
         viewModel.clearHover()
         EventTapManager.shared.setHUDState(isShown: false)
+
+        guard let panel = panel, panel.isVisible else { return }
+
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.14
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0.0
+        }, completionHandler: { [weak panel] in
+            panel?.orderOut(nil)
+            panel?.alphaValue = 1.0
+        })
     }
 
     public func updateModifier(isCopyMode: Bool) {
@@ -124,8 +140,9 @@ public final class HUDWindowController: NSObject {
 
         if animated {
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.22
-                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                context.duration = 0.32
+                // Fluid Apple cubic deceleration curve (matches SwiftUI spring response)
+                context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.0, 0.2, 1.0)
                 panel.animator().setFrame(newFrame, display: true)
             }
         } else {

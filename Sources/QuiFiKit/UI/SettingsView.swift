@@ -289,6 +289,16 @@ struct GeneralTab: View {
                         isOn: $prefsStore.preferences.playFeedback
                     )
 
+                    Picker("Menüleisten-Icon:", selection: $prefsStore.preferences.menuBarIconStyle) {
+                        ForEach(MenuBarIconStyle.allCases, id: \.self) { style in
+                            Text(style.rawValue).tag(style)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: prefsStore.preferences.menuBarIconStyle) { _ in
+                        MenuBarController.shared.updateIcon()
+                    }
+
                     Divider()
 
                     VStack(alignment: .leading, spacing: 6) {
