@@ -1,8 +1,10 @@
 import AppKit
 import SwiftUI
+import os.log
 
 public final class HUDWindowController: NSObject {
     public static let shared = HUDWindowController()
+    private let logger = Logger(subsystem: "org.quifi.app", category: "HUDWindowController")
 
     private var panel: NSPanel?
     public let viewModel = CascadingFolderViewModel()
@@ -15,7 +17,7 @@ public final class HUDWindowController: NSObject {
 
     private func setupPanel() {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 380, height: 260),
+            contentRect: NSRect(x: 0, y: 0, width: 440, height: 320),
             styleMask: [.nonactivatingPanel, .borderless],
             backing: .buffered,
             defer: false
@@ -25,13 +27,16 @@ public final class HUDWindowController: NSObject {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.ignoresMouseEvents = false
+        panel.hidesOnDeactivate = false
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
 
         let rootView = CascadingFolderView(viewModel: viewModel) { [weak self] urls, targetFolder in
             self?.handleDrop(urls: urls, targetFolder: targetFolder)
         }
 
         let hostingView = NSHostingView(rootView: rootView)
+        hostingView.frame = NSRect(x: 0, y: 0, width: 440, height: 320)
         panel.contentView = hostingView
         self.panel = panel
     }
@@ -39,39 +44,43 @@ public final class HUDWindowController: NSObject {
     public func show(at mouseLocation: CGPoint, isCopyMode: Bool) {
         guard let panel = panel else { return }
 
+        logger.info("[QuiFi] Showing HUD panel at: \(mouseLocation.x), \(mouseLocation.y)")
+
         viewModel.reloadPinnedRoots()
         viewModel.isCopyMode = isCopyMode
         viewModel.clearHover()
 
-        // Size to fit content
-        panel.layoutIfNeeded()
-        let size = panel.frame.size
+        let width: CGFloat = 440
+        let height: CGFloat = 320
+        panel.setContentSize(NSSize(width: width, height: height))
 
         // Position slightly offset from cursor so it doesn't immediately drop under cursor
-        var origin = CGPoint(x: mouseLocation.x + 16, y: mouseLocation.y - (size.height / 2))
+        var origin = CGPoint(x: mouseLocation.x + 20, y: mouseLocation.y - (height / 2))
 
         // Screen boundary protection
         if let screen = NSScreen.screens.first(where: { NSPointInRect(mouseLocation, $0.frame) }) ?? NSScreen.main {
             let visible = screen.visibleFrame
-            if origin.x + size.width > visible.maxX {
-                origin.x = mouseLocation.x - size.width - 16
+            if origin.x + width > visible.maxX {
+                origin.x = mouseLocation.x - width - 20
             }
             if origin.x < visible.minX {
-                origin.x = visible.minX + 10
+                origin.x = visible.minX + 15
             }
-            if origin.y + size.height > visible.maxY {
-                origin.y = visible.maxY - size.height - 10
+            if origin.y + height > visible.maxY {
+                origin.y = visible.maxY - height - 15
             }
             if origin.y < visible.minY {
-                origin.y = visible.minY + 10
+                origin.y = visible.minY + 15
             }
         }
 
         panel.setFrameOrigin(origin)
+        panel.alphaValue = 1.0
         panel.orderFrontRegardless()
     }
 
     public func hide() {
+        logger.info("[QuiFi] Hiding HUD panel")
         panel?.orderOut(nil)
         viewModel.clearHover()
         EventTapManager.shared.setHUDState(isShown: false)
@@ -84,6 +93,8 @@ public final class HUDWindowController: NSObject {
     private func handleDrop(urls: [URL], targetFolder: FolderNode) {
         let prefs = PreferencesStore.shared.preferences
         let isCopy = viewModel.isCopyMode
+
+        logger.info("[QuiFi] Dropped \(urls.count) file(s) into folder: \(targetFolder.url.path)")
 
         if prefs.playFeedback {
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
@@ -127,7 +138,7 @@ public final class HUDWindowController: NSObject {
                 backing: .buffered,
                 defer: false
             )
-            window.title = "QuiFi: File Conflict"
+            window.title = "QuiFi: Dateikonflikt"
             window.center()
             window.level = .floating
 

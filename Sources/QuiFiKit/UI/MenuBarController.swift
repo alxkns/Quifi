@@ -94,6 +94,7 @@ public final class MenuBarController: NSObject {
         quitItem.target = self
         menu.addItem(quitItem)
 
+        menu.delegate = self
         statusItem?.menu = menu
     }
 
@@ -114,3 +115,13 @@ public final class MenuBarController: NSObject {
         NSApplication.shared.terminate(nil)
     }
 }
+
+extension MenuBarController: NSMenuDelegate {
+    public func menuWillOpen(_ menu: NSMenu) {
+        if AccessibilityHelper.isAccessibilityGranted {
+            EventTapManager.shared.start()
+        }
+        updateMenu()
+    }
+}
+

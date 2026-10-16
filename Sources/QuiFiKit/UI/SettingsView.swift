@@ -313,8 +313,11 @@ struct GeneralTab: View {
 
                             Spacer()
 
-                            Button("Check Status") {
+                            Button("Status prüfen") {
                                 isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
+                                if isAccessibilityGranted {
+                                    EventTapManager.shared.start()
+                                }
                             }
                         }
                         .padding(.top, 4)

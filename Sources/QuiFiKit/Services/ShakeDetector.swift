@@ -12,10 +12,10 @@ public final class ShakeDetector {
     private var directionChanges: Int = 0
     private var lastShakeTime: Date = .distantPast
 
-    public var sensitivity: Double = 30.0 // Minimum px per reversal
-    public var windowDuration: TimeInterval = 0.45 // 450 ms window
-    public var requiredReversals: Int = 3
-    public var cooldown: TimeInterval = 1.0
+    public var sensitivity: Double = 25.0 // Minimum px per reversal
+    public var windowDuration: TimeInterval = 0.6 // 600 ms window
+    public var requiredReversals: Int = 2
+    public var cooldown: TimeInterval = 0.8
 
     public var onShakeDetected: (() -> Void)?
 

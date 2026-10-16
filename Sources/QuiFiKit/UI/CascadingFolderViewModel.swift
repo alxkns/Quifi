@@ -30,7 +30,21 @@ public final class CascadingFolderViewModel: ObservableObject {
                 depth: 0
             )
         }
-        columns = [roots]
+        if roots.isEmpty {
+            var fallback: [FolderNode] = []
+            if let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first {
+                fallback.append(FolderNode(name: "Downloads", url: downloads, iconName: "arrow.down.circle.fill", isPinnedRoot: true))
+            }
+            if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                fallback.append(FolderNode(name: "Dokumente", url: docs, iconName: "doc.fill", isPinnedRoot: true))
+            }
+            if let desk = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
+                fallback.append(FolderNode(name: "Schreibtisch", url: desk, iconName: "macwindow", isPinnedRoot: true))
+            }
+            columns = [fallback]
+        } else {
+            columns = [roots]
+        }
         selectedPath = []
         hoveredTarget = nil
     }
