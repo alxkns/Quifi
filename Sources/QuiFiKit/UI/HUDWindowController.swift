@@ -46,14 +46,12 @@ public final class HUDWindowController: NSObject {
         panel.contentView = hostingView
         self.panel = panel
 
-        // Dynamically expand and slide window as subfolders cascade open
-        viewModel.$columns
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] cols in
-                guard let self = self, self.panel?.isVisible == true else { return }
-                self.updateLayoutForColumns(columnCount: cols.count, animated: true)
-            }
-            .store(in: &cancellables)
+        // Synchronously update window frame BEFORE SwiftUI renders new columns,
+        // preventing SwiftUI from ever centering or shifting column 0 to negative coordinates.
+        viewModel.onWillUpdateColumns = { [weak self] newCount in
+            guard let self = self, self.panel?.isVisible == true else { return }
+            self.updateLayoutForColumns(columnCount: newCount, animated: true)
+        }
     }
 
     public func show(at mouseLocation: CGPoint, isCopyMode: Bool) {

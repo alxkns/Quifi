@@ -27,6 +27,7 @@ public final class CascadingFolderViewModel: ObservableObject {
     @Published public var isCopyMode: Bool = false
     @Published public var isTransferring: Bool = false
     @Published public var feedbackMessage: String?
+    public var onWillUpdateColumns: ((Int) -> Void)?
 
     private let scanner = FolderScanner.shared
     private let prefsStore = PreferencesStore.shared
@@ -113,6 +114,9 @@ public final class CascadingFolderViewModel: ObservableObject {
                 folders: subfolders
             ))
         }
+
+        // Notify HUDWindowController immediately so the window frame is sized before SwiftUI renders
+        onWillUpdateColumns?(newColumns.count)
         self.columns = newColumns
     }
 
