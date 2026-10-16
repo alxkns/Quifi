@@ -70,7 +70,7 @@ Inspiriert von innovativen macOS-Interaktionsmustern wie *Filee* und *Dropover*,
 ## 🛠️ Installation & Start
 
 ### Option 1: Fertiges Release herunterladen
-1. Lade die neueste `QuiFi-macOS.zip` aus den [Releases](https://github.com/alexknus/Quifi.org/releases) herunter.
+1. Lade die neueste `QuiFi-macOS.zip` aus den [Releases](https://github.com/alxkns/Quifi/releases) herunter.
 2. Entpacke die ZIP-Datei und ziehe `QuiFi.app` in deinen `/Applications`-Ordner.
 3. Starte QuiFi. Da globale Drag-Events überwacht werden, bittet macOS einmalig um die Berechtigung für **Bedienungshilfen (Accessibility)** unter *Systemeinstellungen > Datenschutz & Sicherheit > Bedienungshilfen*.
 
@@ -78,8 +78,8 @@ Inspiriert von innovativen macOS-Interaktionsmustern wie *Filee* und *Dropover*,
 QuiFi nutzt den modernen Swift Package Manager:
 
 ```bash
-git clone https://github.com/alexknus/Quifi.org.git
-cd Quifi.org
+git clone https://github.com/alxkns/Quifi.git
+cd Quifi
 
 # Unit Tests ausführen
 swift test
