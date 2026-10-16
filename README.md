@@ -1,9 +1,13 @@
-# QuiFi — Quick File Organizer for macOS
+# QuiFi — Lightning-Fast Drag & Drop File Organizer for macOS
 
 <p align="center">
-  <img src="docs/images/AppIcon.jpg" alt="QuiFi App Icon" width="160" height="160" style="border-radius: 35px;"><br><br>
-  <b>Blitzschnelle Dateiablage per Drag & Drop mit kaskadierendem Ordnerbaum für macOS.</b><br>
-  <i>Kein lästiges Suchen durch Finder-Fenster mehr. Greife eine Datei, rüttle kurz mit der Maus oder halte Command – und lege sie direkt im richtigen Unterordner ab.</i>
+  <img src="docs/images/AppIcon.jpg" width="128" height="128" alt="QuiFi Icon" style="border-radius: 28px;"><br>
+  <a href="README.de.md">🇩🇪 Deutsche Version</a>
+</p>
+
+<p align="center">
+  <b>Instant drag & drop file organization with cascading folder columns for macOS.</b><br>
+  <i>Stop digging through nested Finder windows. Grab a file, shake your mouse or hold Command, and drop it straight into any subfolder in seconds.</i>
 </p>
 
 <p align="center">
@@ -11,31 +15,32 @@
   <img src="https://img.shields.io/badge/Swift-6.0%2B-orange?logo=swift" alt="Swift 6">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
   <img src="https://img.shields.io/badge/Architecture-Apple%20Silicon%20%26%20Intel-purple" alt="Universal">
+  <img src="https://img.shields.io/badge/Privacy-100%25%20Offline-brightgreen" alt="100% Offline">
 </p>
 
 ---
 
-## 💡 Was ist QuiFi?
+## 💡 What is QuiFi?
 
-Inspiriert von innovativen macOS-Interaktionsmustern wie *Filee* und *Dropover*, löst **QuiFi** das tägliche Problem unübersichtlicher Dateiablagen:
+Inspired by modern macOS productivity tools like *Dropover*, *Yoink*, and *Filee*, **QuiFi** solves the everyday friction of moving files into deeply nested directories:
 
-1. Du nimmst eine Datei im Finder (z. B. aus deinem **Downloads**-Ordner).
-2. Du rüttelst die Maus kurz hin und her **oder** hältst die `⌘ Command`-Taste.
-3. Direkt an deinem Mauszeiger öffnet sich ein schwebendes HUD mit deinen **gepinnten Lieblingsordnern**.
-4. Sobald du über einen Ordner hoverst (z. B. *Lohnlauf*), klappen in Miller-Spalten automatisch die Unterordner auf (*2026* → *01_Januar*).
-5. Du lässt die Maustaste los – die Datei ist sofort an Ort und Stelle!
+1. **Grab** a file in Finder (e.g. from your **Downloads** folder or Desktop).
+2. **Shake** your mouse briefly **or** hold down `⌘ Command`.
+3. A sleek floating HUD opens directly at your cursor showing your **pinned favorite folders**.
+4. Hovering over any folder instantly cascades into its subfolders using clean **Miller columns** (*Projects* → *2026* → *Q1*).
+5. **Release** the mouse button — your file is instantly moved or copied!
 
 ```
-[Mauszeiger mit Datei]
+[Cursor dragging file]
           │
-          ▼  (Shake oder ⌘ halten)
+          ▼  (Shake mouse or hold ⌘)
 ┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
-│ Favoriten         │ │ Lohnlauf          │ │ 2026              │
+│ Favorites         │ │ Projects          │ │ 2026              │
 ├───────────────────┤ ├───────────────────┤ ├───────────────────┤
-│ 📁 Downloads      │ │ 📁 2024           │ │ 📁 01_Januar      │
-│ 📁 Lohnlauf    ───┼─► 📁 2025           │ │ 📁 02_Februar ◄───┼─ [DROP!]
-│ 📁 Buchhaltung    │ │ 📁 2026        ───┼─► 📁 03_März        │
-│ 📁 Projekte       │ │ 📁 Vorlagen       │ │ ...               │
+│ 📁 Downloads      │ │ 📁 Archives       │ │ 📁 Q1             │
+│ 📁 Projects    ───┼─► 📁 2025           │ │ 📁 Q2       ◄─────┼─ [DROP!]
+│ 📁 Documents      │ │ 📁 2026        ───┼─► 📁 Q3             │
+│ 📁 Desktop        │ │ 📁 Templates      │ │ 📁 Q4             │
 └───────────────────┘ └───────────────────┘ └───────────────────┘
 ```
 
@@ -43,86 +48,80 @@ Inspiriert von innovativen macOS-Interaktionsmustern wie *Filee* und *Dropover*,
 
 ## ✨ Features
 
-* **⚡ Spontanes HUD am Mauszeiger:** 
-  * **Shake-to-Show:** Kurzes Rütteln beim Ziehen blendet das HUD ein.
-  * **Modifier-Taste:** Alternativ `⌘ Command` oder `⌥ Option` beim Ziehen halten.
-  * Frei konfigurierbar in den Einstellungen.
-* **🗂️ Kaskadierende Unterordner (Miller Columns):**
-  * Schwebe über einen Ordner, und seine echten Unterordner erscheinen snappig in der nächsten Spalte.
-  * Beliebig tiefe Navigation möglich.
-* **🔄 Verschieben oder Kopieren:**
-  * Standard: Immer **Verschieben** (für saubere Downloads-Ordner).
-  * Hältst du beim Ablegen `⌥ Option` gedrückt, wird die Datei stattdessen **kopiert** (inkl. optischem `+` Badge).
-* **🛡️ Intelligente Konfliktlösung:**
-  * Wenn die Datei am Zielort bereits existiert: Schneller Dialog (**Ersetzen**, **Umbenennen**, **Abbrechen**).
-  * Einstellbare Umbenennungsregeln:
-    * Zähler: `Dateiname_1.pdf` oder `Dateiname (1).pdf`
-    * Datum: `Dateiname_2026-10-16.pdf`
-    * Zeitstempel: `Dateiname_20261016_114000.pdf`
-* **👁️ Finder-Konformität:**
-  * Übernimmt automatisch die Finder-Einstellung für versteckte Ordner (`AppleShowAllFiles`).
-* **🪶 100% Nativ & Leichtgewichtig:**
-  * Entwickelt in **Swift** und **SwiftUI**.
-  * Unauffälliges Menüleisten-Applet (`LSUIElement`), kein störendes Dock-Icon.
-  * Läuft vollständig offline – keine Telemetrie, 100% Datenschutz.
+* **⚡ Instant HUD at Cursor:** 
+  * **Shake-to-Show:** A natural shake of the mouse while dragging summons the HUD immediately.
+  * **Modifier Key:** Alternatively hold `⌘ Command`, `⌥ Option`, or `⌃ Control` during any drag operation.
+  * Fully customizable sensitivity and trigger behavior in Settings.
+* **🗂️ Cascading Miller Columns:**
+  * Hover over any folder to reveal its subfolders in a smooth, snappily cascading column.
+  * Browse to arbitrary depths without cluttering your screen with Finder windows.
+* **🔄 Move or Copy:**
+  * **Move** by default (perfect for keeping your Downloads and Desktop clean).
+  * Hold `⌥ Option` while dropping to switch dynamically to **Copy** mode (complete with a visual `+` badge).
+* **🛡️ Smart Conflict Resolution:**
+  * If a file already exists at the destination, QuiFi gives you quick control: **Replace**, **Auto-Rename**, or **Cancel**.
+  * Flexible auto-renaming patterns:
+    * Counter: `Filename_1.pdf` or `Filename (1).pdf`
+    * Date: `Filename_2026-10-16.pdf`
+    * Timestamp: `Filename_20261016_114000.pdf`
+* **👁️ Respects Finder Visibility:**
+  * Seamlessly reads your system Finder settings (`AppleShowAllFiles`) to hide or show dotfiles and hidden folders.
+* **🪶 100% Native & Privacy-First:**
+  * Built purely with **Swift** and **SwiftUI**.
+  * Discreet menu bar utility (`LSUIElement`), no unnecessary Dock icon.
+  * Runs entirely offline with zero network calls, zero telemetry, and 100% privacy.
 
 ---
 
-## 🛠️ Installation & Start
+## 🛠️ Download & Installation
 
-### Option 1: Fertiges Release herunterladen (Empfohlen)
-1. Lade die **`QuiFi.dmg`** aus den [Releases](https://github.com/alxkns/Quifi/releases) herunter.
-2. Öffne die DMG und ziehe **`QuiFi.app`** in deinen **`Applications`**-Ordner.
-3. **Erster Start & macOS Gatekeeper:**
-   * Da QuiFi als unabhängiges Open-Source-Projekt noch nicht über ein kostenpflichtiges Apple-Entwicklerzertifikat notarisiert ist, beim ersten Start einfach: **Rechtsklick auf `QuiFi` > „Öffnen“** anklicken (oder unter *Systemeinstellungen > Datenschutz & Sicherheit > Dennoch öffnen* bestätigen).
-   * Erlaube QuiFi einmalig die **Bedienungshilfen (Accessibility)** unter *Systemeinstellungen > Datenschutz & Sicherheit > Bedienungshilfen*, damit es globale Drag-Events erkennen kann.
-4. QuiFi nistet sich direkt oben in deiner **macOS-Menüleiste** ein (`folder.badge.gearshape`). Klickst du darauf, kommst du zu den Einstellungen.
+### Option 1: Download Pre-built Release
+1. Download the latest **`QuiFi.dmg`** or **`QuiFi-macOS.zip`** from [Releases](https://github.com/alxkns/Quifi/releases).
+2. Open the DMG and drag **QuiFi.app** to your `/Applications` folder.
+3. Launch QuiFi. Because QuiFi listens for global mouse drags and modifier keys, macOS will prompt you once to grant **Accessibility permissions** under *System Settings > Privacy & Security > Accessibility*.
 
-### Option 2: Selbst bauen (Entwickler)
-QuiFi nutzt den modernen Swift Package Manager:
+### Option 2: Build from Source
+QuiFi uses the standard Swift Package Manager:
 
 ```bash
 git clone https://github.com/alxkns/Quifi.git
 cd Quifi
 
-# Unit Tests ausführen
-swift test
+# Run unit tests
+swift test -Xswiftc -plugin-path -Xswiftc /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins
 
-# Fertige .app und .zip bauen
-./Scripts/build_app.sh --zip
+# Build .app and .dmg
+./Scripts/build_dmg.sh
 ```
-Die fertige App findest du anschließend in `build/QuiFi.app`.
+
+The completed build is generated at `build/QuiFi.app` and `build/QuiFi.dmg`.
 
 ---
 
-## ⚙️ Einstellungen
+## ⚙️ Settings & Configuration
 
-Über das Menüleisten-Icon (`folder.badge.gearshape`) gelangst du zu den Einstellungen:
-* **Ordner:** Füge beliebig viele Favoriten-Ordner von deiner Festplatte hinzu, sortiere sie um oder entferne sie.
-* **Trigger:** Aktiviere/deaktiviere Rütteln (mit Empfindlichkeitsregler) und die Modifier-Taste.
-* **Konflikte:** Lege fest, ob bei gleichnamigen Dateien nachgefragt werden soll oder automatisch mit deinem Wunschmuster umbenannt wird.
-* **Allgemein:** Haptisches Feedback aktivieren, Bedienungshilfen-Status prüfen.
+Click the menu bar icon (`folder.badge.gearshape`) to open preferences:
 
----
-
-## 🏗️ Architektur
-
-* `Sources/QuiFiKit/`
-  * `Models/`: `PinnedFolder`, `FolderNode`, `Preferences`
-  * `Services/`:
-    * `EventTapManager`: Low-Level `CGEventTap` für globales Drag- und Modifier-Tracking
-    * `ShakeDetector`: Zeitfenster-basierte Richtungswechsel-Erkennung für das Maus-Rütteln
-    * `FolderScanner`: Verzeichnis-Inspektor mit `localizedStandardCompare` und `AppleShowAllFiles`-Filter
-    * `FileOrganizerService`: Atomic Move/Copy mit automatischer Namensgenerierung
-  * `UI/`:
-    * `HUDWindowController`: Schwebendes, rahmenloses `NSPanel` mit Schirmrand-Erkennung
-    * `CascadingFolderView`: SwiftUI Miller-Columns mit Drag & Drop Integration
-    * `SettingsView`: Ausführliches Einstellungsfenster mit 4 Reitern
-* `Sources/QuiFi/`:
-  * App-Bootstrap, `AppDelegate` und `main.swift`
+* **Folders:** Add, reorder, or remove any number of root favorite folders from your disk.
+* **Triggers:** Enable/disable mouse shake (with slider for sensitivity) and modifier key triggers.
+* **Conflicts:** Configure default behavior for name collisions and choose your preferred rename template.
+* **General:** Toggle haptic feedback on drop and verify Accessibility status.
 
 ---
 
-## 📄 Lizenz
+## 🤝 Contributing
 
-Dieses Projekt ist unter der **MIT-Lizenz** lizenziert — siehe [LICENSE](LICENSE) für Details.
+Contributions, bug reports, and feature requests are very welcome!
+Feel free to open an issue or submit a pull request:
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
