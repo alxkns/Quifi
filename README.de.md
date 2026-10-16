@@ -1,6 +1,7 @@
 # QuiFi — Quick File Organizer for macOS
 
 <p align="center">
+  <img src="docs/images/AppIcon.png" width="128" height="128" alt="QuiFi Icon"><br>
   <b>Blitzschnelle Dateiablage per Drag & Drop mit kaskadierendem Ordnerbaum für macOS.</b><br>
   <i>Kein lästiges Suchen durch Finder-Fenster mehr. Greife eine Datei, rüttle kurz mit der Maus oder halte Command – und lege sie direkt im richtigen Unterordner ab.</i>
 </p>

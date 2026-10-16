@@ -1,7 +1,7 @@
 # QuiFi — Lightning-Fast Drag & Drop File Organizer for macOS
 
 <p align="center">
-  <img src="docs/images/AppIcon.jpg" width="128" height="128" alt="QuiFi Icon" style="border-radius: 28px;"><br>
+  <img src="docs/images/AppIcon.png" width="128" height="128" alt="QuiFi Icon"><br>
   <a href="README.de.md">🇩🇪 Deutsche Version</a>
 </p>
 
