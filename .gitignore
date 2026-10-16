@@ -1,0 +1,15 @@
+# Xcode & Swift Package Manager
+.build/
+build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# User settings
+xcuserdata/
