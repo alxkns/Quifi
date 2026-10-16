@@ -155,11 +155,16 @@ public final class HUDWindowController: NSObject {
         let newFrame = NSRect(x: originX, y: originY, width: targetWidth, height: targetHeight)
 
         if animated {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.32
-                // Fluid Apple cubic deceleration curve (matches SwiftUI spring response)
-                context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.0, 0.2, 1.0)
-                panel.animator().setFrame(newFrame, display: true)
+            if newFrame.width >= panel.frame.width {
+                // Expanding: instantly provide full runway so SwiftUI never centers or shifts left
+                panel.setFrame(newFrame, display: true)
+            } else {
+                // Shrinking: animate smoothly back
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.32
+                    context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.0, 0.2, 1.0)
+                    panel.animator().setFrame(newFrame, display: true)
+                }
             }
         } else {
             panel.setFrame(newFrame, display: true)

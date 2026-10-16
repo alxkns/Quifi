@@ -262,6 +262,7 @@ struct GeneralTab: View {
     @ObservedObject var prefsStore: PreferencesStore
     @Binding var isAccessibilityGranted: Bool
     @ObservedObject var updateManager = UpdateManager.shared
+    @State private var isFullDiskAccessGranted: Bool = FullDiskAccessHelper.isFullDiskAccessGranted
 
     var body: some View {
         Form {
@@ -302,22 +303,22 @@ struct GeneralTab: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Accessibility Permission")
+                        Text("Bedienungshilfen (Gesten & Shortcuts)")
                             .font(.system(size: 13, weight: .medium))
 
-                        Text("QuiFi requires this permission to monitor global drag and modifier key events.")
+                        Text("Wird benötigt, um globale Drag- und Tastaturevents (z. B. Command gedrückt halten) zu erkennen.")
                             .font(.caption)
                             .foregroundColor(.secondary)
 
                         HStack {
                             if isAccessibilityGranted {
-                                Label("Permission granted", systemImage: "checkmark.circle.fill")
+                                Label("Berechtigung erteilt", systemImage: "checkmark.circle.fill")
                                     .foregroundColor(.green)
                             } else {
-                                Label("Permission missing", systemImage: "xmark.circle.fill")
+                                Label("Berechtigung fehlt", systemImage: "xmark.circle.fill")
                                     .foregroundColor(.red)
 
-                                Button("Open System Settings") {
+                                Button("In Systemeinstellungen öffnen") {
                                     AccessibilityHelper.openSystemAccessibilityPreferences()
                                 }
                             }
@@ -329,6 +330,38 @@ struct GeneralTab: View {
                                 if isAccessibilityGranted {
                                     EventTapManager.shared.start()
                                 }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Dateizugriff (Einmalig für alle Ordner)")
+                            .font(.system(size: 13, weight: .medium))
+
+                        Text("Mit Festplattenvollzugriff kann QuiFi Dateien direkt in alle Ordner und Unterordner ablegen, ohne dass macOS jedes Mal für jeden Ordner separat nachfragt.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        HStack {
+                            if isFullDiskAccessGranted {
+                                Label("Vollzugriff aktiv (keine Abfragen mehr)", systemImage: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            } else {
+                                Label("Eingeschränkt (fragt pro Ordner nach)", systemImage: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+
+                                Button("Festplattenvollzugriff öffnen") {
+                                    FullDiskAccessHelper.openFullDiskAccessPreferences()
+                                }
+                            }
+
+                            Spacer()
+
+                            Button("Status prüfen") {
+                                isFullDiskAccessGranted = FullDiskAccessHelper.isFullDiskAccessGranted
                             }
                         }
                         .padding(.top, 4)
