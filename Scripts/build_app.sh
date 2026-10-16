@@ -40,6 +40,11 @@ chmod +x "$MACOS_DIR/$APP_NAME"
 # Copy Info.plist
 cp "$PROJECT_DIR/Sources/QuiFi/Resources/Info.plist" "$CONTENTS_DIR/Info.plist"
 
+# Copy AppIcon.icns if present
+if [ -f "$PROJECT_DIR/Sources/QuiFi/Resources/AppIcon.icns" ]; then
+    cp "$PROJECT_DIR/Sources/QuiFi/Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
+fi
+
 # Create PkgInfo
 echo -n "APPL????" > "$CONTENTS_DIR/PkgInfo"
 

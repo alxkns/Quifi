@@ -19,7 +19,7 @@ let package = Package(
             name: "QuiFi",
             dependencies: ["QuiFiKit"],
             path: "Sources/QuiFi",
-            exclude: ["Resources/Info.plist"]
+            exclude: ["Resources"]
         ),
         .testTarget(
             name: "QuiFiTests",

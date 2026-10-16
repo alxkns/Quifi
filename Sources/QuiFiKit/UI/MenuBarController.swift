@@ -18,7 +18,7 @@ public final class SettingsWindowController: NSObject {
             backing: .buffered,
             defer: false
         )
-        window.title = "QuiFi Einstellungen"
+        window.title = "QuiFi Settings"
         window.center()
         window.isReleasedWhenClosed = false
         window.contentView = NSHostingView(rootView: SettingsView())
@@ -58,7 +58,7 @@ public final class MenuBarController: NSObject {
         menu.addItem(NSMenuItem.separator())
 
         let testItem = NSMenuItem(
-            title: "HUD-Vorschau öffnen",
+            title: "Open HUD Preview",
             action: #selector(testHUD),
             keyEquivalent: "t"
         )
@@ -66,7 +66,7 @@ public final class MenuBarController: NSObject {
         menu.addItem(testItem)
 
         let settingsItem = NSMenuItem(
-            title: "Einstellungen…",
+            title: "Settings…",
             action: #selector(openSettings),
             keyEquivalent: ","
         )
@@ -77,7 +77,7 @@ public final class MenuBarController: NSObject {
 
         let accessStatus = AccessibilityHelper.isAccessibilityGranted
         let accessItem = NSMenuItem(
-            title: accessStatus ? "✓ Bedienungshilfen aktiv" : "⚠️ Bedienungshilfen erlauben…",
+            title: accessStatus ? "✓ Accessibility Enabled" : "⚠️ Enable Accessibility…",
             action: accessStatus ? nil : #selector(requestAccessibility),
             keyEquivalent: ""
         )
@@ -87,7 +87,7 @@ public final class MenuBarController: NSObject {
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(
-            title: "QuiFi beenden",
+            title: "Quit QuiFi",
             action: #selector(quitApp),
             keyEquivalent: "q"
         )

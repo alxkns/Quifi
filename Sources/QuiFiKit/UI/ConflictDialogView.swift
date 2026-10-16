@@ -26,10 +26,10 @@ public struct ConflictDialogView: View {
                 .foregroundColor(.orange)
 
             VStack(spacing: 6) {
-                Text("Datei existiert bereits")
+                Text("File Already Exists")
                     .font(.headline)
 
-                Text("Am Zielort existiert bereits eine Datei mit dem Namen:")
+                Text("A file with this name already exists at the destination:")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -41,7 +41,7 @@ public struct ConflictDialogView: View {
                     .background(Color.secondary.opacity(0.15))
                     .cornerRadius(6)
 
-                Text("Umbenennen nach: \(renamePreviewName)")
+                Text("Auto-rename to: \(renamePreviewName)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -49,16 +49,16 @@ public struct ConflictDialogView: View {
             Divider()
 
             HStack(spacing: 10) {
-                Button("Abbrechen") {
+                Button("Cancel") {
                     onDecision(.skip)
                 }
                 .keyboardShortcut(.cancelAction)
 
-                Button("Ersetzen") {
+                Button("Replace") {
                     onDecision(.replace)
                 }
 
-                Button("Umbenennen") {
+                Button("Rename") {
                     onDecision(.rename)
                 }
                 .keyboardShortcut(.defaultAction)

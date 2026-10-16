@@ -14,7 +14,7 @@ public struct CascadingFolderView: View {
             // Header Bar
             HStack {
                 Label {
-                    Text(viewModel.isCopyMode ? "Kopieren nach..." : "Verschieben nach...")
+                    Text(viewModel.isCopyMode ? "Copy to..." : "Move to...")
                         .font(.system(size: 13, weight: .bold))
                 } icon: {
                     Image(systemName: viewModel.isCopyMode ? "plus.circle.fill" : "arrow.right.circle.fill")
@@ -30,7 +30,7 @@ public struct CascadingFolderView: View {
                         .lineLimit(1)
                 }
 
-                Text(viewModel.isCopyMode ? "⌥ Kopieren" : "⌘ Verschieben")
+                Text(viewModel.isCopyMode ? "⌥ Copy" : "⌘ Move")
                     .font(.system(size: 10, weight: .semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -125,9 +125,9 @@ struct FolderColumnView: View {
 
     private var columnTitle: String {
         if columnIndex == 0 {
-            return "Favoriten"
+            return "Favorites"
         }
-        return "Ebene \(columnIndex)"
+        return "Level \(columnIndex)"
     }
 }
 

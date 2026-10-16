@@ -15,16 +15,48 @@ public enum TriggerModifier: String, Codable, CaseIterable {
 }
 
 public enum ConflictResolution: String, Codable, CaseIterable {
-    case ask = "Nachfragen"
-    case autoRename = "Automatisch umbenennen"
-    case replace = "Überschreiben"
+    case ask = "Ask what to do"
+    case autoRename = "Automatically rename"
+    case replace = "Overwrite"
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw {
+        case "Nachfragen", "Ask", "Ask what to do":
+            self = .ask
+        case "Automatisch umbenennen", "Auto rename", "Automatically rename":
+            self = .autoRename
+        case "Überschreiben", "Overwrite", "Replace":
+            self = .replace
+        default:
+            self = .ask
+        }
+    }
 }
 
 public enum RenameFormat: String, Codable, CaseIterable {
-    case counter = "Zähler: {name}_{counter}"
-    case counterParentheses = "Zähler: {name} ({counter})"
-    case date = "Datum: {name}_{date}"
-    case dateTime = "Datum & Zeit: {name}_{datetime}"
+    case counter = "Counter: {name}_{counter}"
+    case counterParentheses = "Counter: {name} ({counter})"
+    case date = "Date: {name}_{date}"
+    case dateTime = "Date & Time: {name}_{datetime}"
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw {
+        case "Zähler: {name}_{counter}", "Counter: {name}_{counter}":
+            self = .counter
+        case "Zähler: {name} ({counter})", "Counter: {name} ({counter})":
+            self = .counterParentheses
+        case "Datum: {name}_{date}", "Date: {name}_{date}":
+            self = .date
+        case "Datum & Zeit: {name}_{datetime}", "Date & Time: {name}_{datetime}":
+            self = .dateTime
+        default:
+            self = .counter
+        }
+    }
 }
 
 public struct Preferences: Codable, Equatable {
@@ -46,13 +78,16 @@ public struct Preferences: Codable, Equatable {
 
         var initialFolders: [PinnedFolder] = []
         if let docs = documents {
-            initialFolders.append(PinnedFolder(name: "Dokumente", url: docs, iconName: "doc.fill"))
+            let name = FileManager.default.displayName(atPath: docs.path)
+            initialFolders.append(PinnedFolder(name: name, url: docs, iconName: "doc.fill"))
         }
         if let down = downloads {
-            initialFolders.append(PinnedFolder(name: "Downloads", url: down, iconName: "arrow.down.circle.fill"))
+            let name = FileManager.default.displayName(atPath: down.path)
+            initialFolders.append(PinnedFolder(name: name, url: down, iconName: "arrow.down.circle.fill"))
         }
         if let desk = desktop {
-            initialFolders.append(PinnedFolder(name: "Schreibtisch", url: desk, iconName: "macwindow"))
+            let name = FileManager.default.displayName(atPath: desk.path)
+            initialFolders.append(PinnedFolder(name: name, url: desk, iconName: "macwindow"))
         }
 
         return Preferences(

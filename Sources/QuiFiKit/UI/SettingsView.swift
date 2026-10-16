@@ -12,25 +12,25 @@ public struct SettingsView: View {
         TabView(selection: $selectedTab) {
             PinnedFoldersTab(prefsStore: prefsStore)
                 .tabItem {
-                    Label("Ordner", systemImage: "folder.badge.plus")
+                    Label("Folders", systemImage: "folder.badge.plus")
                 }
                 .tag(0)
 
             TriggerTab(prefsStore: prefsStore)
                 .tabItem {
-                    Label("Trigger", systemImage: "hand.tap")
+                    Label("Triggers", systemImage: "hand.tap")
                 }
                 .tag(1)
 
             ConflictsTab(prefsStore: prefsStore)
                 .tabItem {
-                    Label("Konflikte", systemImage: "doc.badge.gearshape")
+                    Label("Conflicts", systemImage: "doc.badge.gearshape")
                 }
                 .tag(2)
 
             GeneralTab(prefsStore: prefsStore, isAccessibilityGranted: $isAccessibilityGranted)
                 .tabItem {
-                    Label("Allgemein", systemImage: "gearshape")
+                    Label("General", systemImage: "gearshape")
                 }
                 .tag(3)
         }
@@ -49,10 +49,10 @@ struct PinnedFoldersTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Gepinnte Hauptordner")
+            Text("Pinned Root Folders")
                 .font(.headline)
 
-            Text("Diese Ordner erscheinen als oberste Ebene im QuiFi-HUD. Beim Hovern werden ihre Unterordner kaskadierend eingeblendet.")
+            Text("These folders appear as the top level in the QuiFi HUD. Hover over any folder to cascade into its subfolders.")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
@@ -79,7 +79,7 @@ struct PinnedFoldersTab: View {
                         if !folder.exists {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.orange)
-                                .help("Dieser Ordner existiert nicht mehr.")
+                                .help("This folder no longer exists.")
                         }
                     }
                     .padding(.vertical, 3)
@@ -97,17 +97,18 @@ struct PinnedFoldersTab: View {
 
             HStack {
                 Button(action: addFolder) {
-                    Label("Ordner hinzufügen…", systemImage: "plus")
+                    Label("Add Folder…", systemImage: "plus")
                 }
 
                 Button(action: removeSelectedFolder) {
-                    Label("Entfernen", systemImage: "minus")
+                    Label("Remove", systemImage: "minus")
                 }
                 .disabled(selectedFolderID == nil)
 
                 Spacer()
 
-                Text("\(prefsStore.preferences.pinnedFolders.count) Ordner")
+                let count = prefsStore.preferences.pinnedFolders.count
+                Text("\(count) \(count == 1 ? "folder" : "folders")")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -120,7 +121,7 @@ struct PinnedFoldersTab: View {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        panel.prompt = "Als Favorit wählen"
+        panel.prompt = "Choose as Favorite"
 
         if panel.runModal() == .OK {
             for url in panel.urls {
@@ -144,16 +145,16 @@ struct TriggerTab: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("Maus rütteln (Shake-to-Show)", isOn: $prefsStore.preferences.enableShakeTrigger)
+                    Toggle("Shake cursor (Shake-to-Show)", isOn: $prefsStore.preferences.enableShakeTrigger)
                         .font(.system(size: 13, weight: .medium))
 
-                    Text("Datei mit der Maus greifen und kurz hin- und her-schütteln, damit sich QuiFi am Cursor öffnet.")
+                    Text("Grab a file with the mouse and shake back and forth briefly to reveal QuiFi at your cursor.")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
                     if prefsStore.preferences.enableShakeTrigger {
                         HStack {
-                            Text("Empfindlichkeit:")
+                            Text("Sensitivity:")
                                 .font(.caption)
                             Slider(
                                 value: $prefsStore.preferences.shakeSensitivity,
@@ -172,15 +173,15 @@ struct TriggerTab: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("Modifier-Taste beim Ziehen halten", isOn: $prefsStore.preferences.enableModifierTrigger)
+                    Toggle("Hold modifier key while dragging", isOn: $prefsStore.preferences.enableModifierTrigger)
                         .font(.system(size: 13, weight: .medium))
 
-                    Text("Datei im Finder greifen und die Taste gedrückt halten, um das HUD einzublenden.")
+                    Text("Grab a file in Finder and hold the modifier key to instantly reveal the HUD.")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
                     if prefsStore.preferences.enableModifierTrigger {
-                        Picker("Taste:", selection: $prefsStore.preferences.triggerModifier) {
+                        Picker("Key:", selection: $prefsStore.preferences.triggerModifier) {
                             ForEach(TriggerModifier.allCases, id: \.self) { modifier in
                                 Text(modifier.rawValue).tag(modifier)
                             }
@@ -197,9 +198,9 @@ struct TriggerTab: View {
 
     private var sensitivityLabel: String {
         let val = prefsStore.preferences.shakeSensitivity
-        if val <= 25 { return "Hoch" }
-        if val <= 40 { return "Mittel" }
-        return "Sanft"
+        if val <= 25 { return "High" }
+        if val <= 40 { return "Medium" }
+        return "Gentle"
     }
 }
 
@@ -211,10 +212,10 @@ struct ConflictsTab: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Dateikonflikte am Zielort")
+                    Text("Destination File Conflicts")
                         .font(.headline)
 
-                    Picker("Wenn die Datei bereits existiert:", selection: $prefsStore.preferences.conflictResolution) {
+                    Picker("If a file with the same name exists:", selection: $prefsStore.preferences.conflictResolution) {
                         ForEach(ConflictResolution.allCases, id: \.self) { res in
                             Text(res.rawValue).tag(res)
                         }
@@ -224,7 +225,7 @@ struct ConflictsTab: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Muster für automatisches Umbenennen:")
+                        Text("Automatic rename pattern:")
                             .font(.system(size: 12, weight: .medium))
 
                         Picker("Format:", selection: $prefsStore.preferences.renameFormat) {
@@ -235,7 +236,7 @@ struct ConflictsTab: View {
                         .pickerStyle(.menu)
                         .frame(width: 280)
 
-                        Text("Beispiel: Aus 'Rechnung.pdf' wird 'Rechnung_1.pdf' oder 'Rechnung_2026-10-16.pdf'")
+                        Text("Example: 'Invoice.pdf' becomes 'Invoice_1.pdf' or 'Invoice_2026-10-16.pdf'")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -245,7 +246,7 @@ struct ConflictsTab: View {
                     HStack(spacing: 8) {
                         Image(systemName: "info.circle")
                             .foregroundColor(.accentColor)
-                        Text("Tipp: Die Standard-Aktion ist immer 'Verschieben'. Hältst du beim Ablegen die Option-Taste (⌥) gedrückt, wird die Datei kopiert.")
+                        Text("Tip: The default drop action is Move. Hold the Option (⌥) key while dropping to copy instead.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -265,54 +266,54 @@ struct GeneralTab: View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("System-Integration")
+                    Text("System Integration")
                         .font(.headline)
 
                     Toggle(
-                        "Finder-Einstellung für versteckte Ordner übernehmen",
+                        "Respect Finder hidden files setting",
                         isOn: $prefsStore.preferences.respectSystemHiddenFiles
                     )
 
                     HStack {
-                        Text("Status im Finder:")
+                        Text("Finder status:")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text(FolderScanner.shared.isFinderShowingHiddenFiles ? "Versteckte Dateien sind sichtbar" : "Versteckte Dateien sind ausgeblendet")
+                        Text(FolderScanner.shared.isFinderShowingHiddenFiles ? "Hidden files are visible" : "Hidden files are hidden")
                             .font(.caption)
                             .foregroundColor(FolderScanner.shared.isFinderShowingHiddenFiles ? .accentColor : .secondary)
                     }
 
                     Toggle(
-                        "Haptisches Feedback beim Ablegen abspielen",
+                        "Play haptic feedback on drop",
                         isOn: $prefsStore.preferences.playFeedback
                     )
 
                     Divider()
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Bedienungshilfen-Berechtigung (Accessibility)")
+                        Text("Accessibility Permission")
                             .font(.system(size: 13, weight: .medium))
 
-                        Text("QuiFi benötigt diese Berechtigung, um globale Drag- und Modifier-Events im Hintergrund zu erkennen.")
+                        Text("QuiFi requires this permission to monitor global drag and modifier key events.")
                             .font(.caption)
                             .foregroundColor(.secondary)
 
                         HStack {
                             if isAccessibilityGranted {
-                                Label("Berechtigung erteilt", systemImage: "checkmark.circle.fill")
+                                Label("Permission granted", systemImage: "checkmark.circle.fill")
                                     .foregroundColor(.green)
                             } else {
-                                Label("Berechtigung fehlt", systemImage: "xmark.circle.fill")
+                                Label("Permission missing", systemImage: "xmark.circle.fill")
                                     .foregroundColor(.red)
 
-                                Button("Systemeinstellungen öffnen") {
+                                Button("Open System Settings") {
                                     AccessibilityHelper.openSystemAccessibilityPreferences()
                                 }
                             }
 
                             Spacer()
 
-                            Button("Status prüfen") {
+                            Button("Check Status") {
                                 isAccessibilityGranted = AccessibilityHelper.isAccessibilityGranted
                             }
                         }
