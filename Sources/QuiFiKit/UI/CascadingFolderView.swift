@@ -61,6 +61,7 @@ public struct CascadingFolderView: View {
             .padding(.bottom, 12)
             .animation(.spring(response: 0.32, dampingFraction: 0.88), value: viewModel.columns.map(\.id))
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.ultraThinMaterial)

@@ -12,6 +12,7 @@ public final class HUDWindowController: NSObject {
     private var conflictWindow: NSWindow?
     private var cancellables = Set<AnyCancellable>()
     private var initialMouseLocation: CGPoint = .zero
+    private var anchoredOriginX: CGFloat = 0
 
     public override init() {
         super.init()
@@ -65,6 +66,20 @@ public final class HUDWindowController: NSObject {
         viewModel.isCopyMode = isCopyMode
         viewModel.clearHover()
 
+        let screen = NSScreen.screens.first(where: { NSPointInRect(mouseLocation, $0.frame) }) ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+
+        // Anchor position for column 0
+        let initialWidth: CGFloat = 185 + 24
+        var anchorX = mouseLocation.x + 18
+        if anchorX + initialWidth > visible.maxX - 16 {
+            anchorX = visible.maxX - 16 - initialWidth
+        }
+        if anchorX < visible.minX + 16 {
+            anchorX = visible.minX + 16
+        }
+        self.anchoredOriginX = anchorX
+
         updateLayoutForColumns(columnCount: viewModel.columns.count, animated: false)
 
         panel.alphaValue = 0.0
@@ -112,11 +127,10 @@ public final class HUDWindowController: NSObject {
         let screen = NSScreen.screens.first(where: { NSPointInRect(initialMouseLocation, $0.frame) }) ?? NSScreen.main
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
 
-        // Try placing the panel to the right of the initial mouse location
-        var originX = initialMouseLocation.x + 18
-        var originY = initialMouseLocation.y - (targetHeight / 2)
+        // Anchor the left side to anchoredOriginX so column 0 never moves!
+        var originX = anchoredOriginX
 
-        // If the cascade grows beyond the right screen edge, smoothly shift it left
+        // Only shift the window left if expanding would physically go past the right screen boundary
         let maxRight = visible.maxX - 16
         if originX + targetWidth > maxRight {
             originX = maxRight - targetWidth
@@ -127,6 +141,8 @@ public final class HUDWindowController: NSObject {
         if originX < minLeft {
             originX = minLeft
         }
+
+        var originY = initialMouseLocation.y - (targetHeight / 2)
 
         // Clamp to vertical screen boundaries
         if originY + targetHeight > visible.maxY - 12 {
