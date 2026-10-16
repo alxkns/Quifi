@@ -52,10 +52,15 @@ fi
 # Create PkgInfo
 echo -n "APPL????" > "$CONTENTS_DIR/PkgInfo"
 
-# Ad-hoc code sign with persistent designated requirement so TCC permissions stay valid across builds
-codesign --force --deep --sign - --requirements '=designated => identifier "org.quifi.app"' "$APP_BUNDLE"
+# Ad-hoc code sign with persistent designated requirement matching the Bundle ID
+BUNDLE_ID="$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$CONTENTS_DIR/Info.plist" 2>/dev/null || echo "com.alxkns.quifi")"
+echo "🔏 Signing with designated requirement for '$BUNDLE_ID'..."
+codesign --force --deep --sign - --requirements "=designated => identifier \"$BUNDLE_ID\"" "$APP_BUNDLE"
 
-echo "✅ Successfully built $APP_BUNDLE!"
+# Verify signature satisfies its designated requirement
+codesign --verify --verbose=2 "$APP_BUNDLE"
+
+echo "✅ Successfully built and signed $APP_BUNDLE!"
 
 # Optional zip creation
 if [ "$1" == "--zip" ]; then
