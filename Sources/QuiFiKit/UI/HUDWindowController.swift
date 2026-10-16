@@ -13,6 +13,7 @@ public final class HUDWindowController: NSObject {
     private var cancellables = Set<AnyCancellable>()
     private var initialMouseLocation: CGPoint = .zero
     private var anchoredOriginX: CGFloat = 0
+    private var shrinkTimer: Timer?
 
     public override init() {
         super.init()
@@ -92,6 +93,8 @@ public final class HUDWindowController: NSObject {
 
     public func hide() {
         logger.info("[QuiFi] Hiding HUD panel")
+        shrinkTimer?.invalidate()
+        shrinkTimer = nil
         viewModel.clearHover()
         EventTapManager.shared.setHUDState(isShown: false)
 
@@ -113,6 +116,10 @@ public final class HUDWindowController: NSObject {
 
     private func updateLayoutForColumns(columnCount: Int, animated: Bool) {
         guard let panel = panel else { return }
+
+        // Cancel any pending shrink timer immediately
+        shrinkTimer?.invalidate()
+        shrinkTimer = nil
 
         let count = max(1, columnCount)
         let colWidth: CGFloat = 185
@@ -157,11 +164,23 @@ public final class HUDWindowController: NSObject {
                 // Expanding: instantly provide full runway so SwiftUI never centers or shifts left
                 panel.setFrame(newFrame, display: true)
             } else {
-                // Shrinking: animate smoothly back
-                NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.32
-                    context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.0, 0.2, 1.0)
-                    panel.animator().setFrame(newFrame, display: true)
+                // Shrinking: DO NOT shrink window frame while SwiftUI is fading out columns!
+                // Keeping the window wide during the fade-out ensures NSHostingView never centers
+                // the fading columns into negative X space (which caused the leftward shift!).
+                // After the SwiftUI removal animation finishes (0.35s), shrink the transparent window frame cleanly.
+                shrinkTimer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: false) { [weak self, weak panel] _ in
+                    guard let self = self, let panel = panel, panel.isVisible else { return }
+                    let currentCount = max(1, self.viewModel.columns.count)
+                    let currentWidth = (CGFloat(currentCount) * colWidth) + (CGFloat(currentCount - 1) * spacing) + horizontalPadding
+                    var currX = self.anchoredOriginX
+                    if currX + currentWidth > maxRight {
+                        currX = maxRight - currentWidth
+                    }
+                    if currX < minLeft {
+                        currX = minLeft
+                    }
+                    let finalFrame = NSRect(x: currX, y: originY, width: currentWidth, height: targetHeight)
+                    panel.setFrame(finalFrame, display: true)
                 }
             }
         } else {

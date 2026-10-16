@@ -9,6 +9,14 @@ public struct CascadingFolderView: View {
         self.onDropFilesToFolder = onDropFilesToFolder
     }
 
+    private var cardWidth: CGFloat {
+        let count = CGFloat(max(1, viewModel.columns.count))
+        let colWidth: CGFloat = 185
+        let spacing: CGFloat = 10
+        let horizontalPadding: CGFloat = 24
+        return (count * colWidth) + ((count - 1) * spacing) + horizontalPadding
+    }
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Sleek, minimal header
@@ -28,8 +36,6 @@ public struct CascadingFolderView: View {
                 Text(viewModel.isCopyMode ? "⌥ Copy active" : "⌥ hold to copy")
                     .font(.system(size: 10, weight: .regular))
                     .foregroundColor(viewModel.isCopyMode ? .green.opacity(0.8) : .secondary.opacity(0.6))
-
-                Spacer()
             }
             .padding(.horizontal, 14)
             .padding(.top, 10)
@@ -59,8 +65,10 @@ public struct CascadingFolderView: View {
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
-            .animation(.spring(response: 0.32, dampingFraction: 0.88), value: viewModel.columns.map(\.id))
+            .animation(.spring(response: 0.30, dampingFraction: 0.88), value: viewModel.columns.map(\.id))
         }
+        .frame(width: cardWidth, alignment: .topLeading)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -70,6 +78,7 @@ public struct CascadingFolderView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.white.opacity(0.18), lineWidth: 1)
         )
+        .animation(.spring(response: 0.30, dampingFraction: 0.88), value: cardWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
