@@ -52,8 +52,8 @@ fi
 # Create PkgInfo
 echo -n "APPL????" > "$CONTENTS_DIR/PkgInfo"
 
-# Ad-hoc code sign for seamless local execution
-codesign --force --deep --sign - "$APP_BUNDLE"
+# Ad-hoc code sign with persistent designated requirement so TCC permissions stay valid across builds
+codesign --force --deep --sign - --requirements '=designated => identifier "org.quifi.app"' "$APP_BUNDLE"
 
 echo "✅ Successfully built $APP_BUNDLE!"
 
