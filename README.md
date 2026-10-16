@@ -69,10 +69,13 @@ Inspiriert von innovativen macOS-Interaktionsmustern wie *Filee* und *Dropover*,
 
 ## 🛠️ Installation & Start
 
-### Option 1: Fertiges Release herunterladen
-1. Lade die neueste `QuiFi-macOS.zip` aus den [Releases](https://github.com/alxkns/Quifi/releases) herunter.
-2. Entpacke die ZIP-Datei und ziehe `QuiFi.app` in deinen `/Applications`-Ordner.
-3. Starte QuiFi. Da globale Drag-Events überwacht werden, bittet macOS einmalig um die Berechtigung für **Bedienungshilfen (Accessibility)** unter *Systemeinstellungen > Datenschutz & Sicherheit > Bedienungshilfen*.
+### Option 1: Fertiges Release herunterladen (Empfohlen)
+1. Lade die **`QuiFi.dmg`** aus den [Releases](https://github.com/alxkns/Quifi/releases) herunter.
+2. Öffne die DMG und ziehe **`QuiFi.app`** in deinen **`Applications`**-Ordner.
+3. **Erster Start & macOS Gatekeeper:**
+   * Da QuiFi als unabhängiges Open-Source-Projekt noch nicht über ein kostenpflichtiges Apple-Entwicklerzertifikat notarisiert ist, beim ersten Start einfach: **Rechtsklick auf `QuiFi` > „Öffnen“** anklicken (oder unter *Systemeinstellungen > Datenschutz & Sicherheit > Dennoch öffnen* bestätigen).
+   * Erlaube QuiFi einmalig die **Bedienungshilfen (Accessibility)** unter *Systemeinstellungen > Datenschutz & Sicherheit > Bedienungshilfen*, damit es globale Drag-Events erkennen kann.
+4. QuiFi nistet sich direkt oben in deiner **macOS-Menüleiste** ein (`folder.badge.gearshape`). Klickst du darauf, kommst du zu den Einstellungen.
 
 ### Option 2: Selbst bauen (Entwickler)
 QuiFi nutzt den modernen Swift Package Manager:

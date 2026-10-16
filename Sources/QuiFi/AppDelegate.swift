@@ -16,8 +16,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, EventTapManagerDelegat
         // Check accessibility
         if !AccessibilityHelper.isAccessibilityGranted {
             print("[QuiFi] Accessibility permissions needed. Prompting user...")
+            SettingsWindowController.shared.show()
             _ = AccessibilityHelper.requestAccessibility(prompt: true)
         }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        SettingsWindowController.shared.show()
+        return true
     }
 
     func applicationWillTerminate(_ notification: Notification) {

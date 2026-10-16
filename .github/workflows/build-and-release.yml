@@ -24,14 +24,18 @@ jobs:
       - name: Run Tests
         run: swift test
 
-      - name: Build Application Bundle
-        run: ./Scripts/build_app.sh --zip
+      - name: Build Application Bundle and DMG
+        run: |
+          ./Scripts/build_app.sh --zip
+          ./Scripts/build_dmg.sh
 
-      - name: Upload Build Artifact
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: QuiFi-macOS
-          path: build/QuiFi-macOS.zip
+          path: |
+            build/QuiFi.dmg
+            build/QuiFi-macOS.zip
 
   release:
     name: Publish GitHub Release
@@ -52,7 +56,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/QuiFi-macOS.zip
+          files: |
+            build/QuiFi.dmg
+            build/QuiFi-macOS.zip
           draft: false
           prerelease: false
           generate_release_notes: true
