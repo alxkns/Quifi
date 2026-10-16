@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Combine
 import os.log
 
 public final class HUDWindowController: NSObject {
@@ -9,6 +10,8 @@ public final class HUDWindowController: NSObject {
     private var panel: NSPanel?
     public let viewModel = CascadingFolderViewModel()
     private var conflictWindow: NSWindow?
+    private var cancellables = Set<AnyCancellable>()
+    private var initialMouseLocation: CGPoint = .zero
 
     public override init() {
         super.init()
@@ -16,8 +19,11 @@ public final class HUDWindowController: NSObject {
     }
 
     private func setupPanel() {
+        let initialWidth: CGFloat = 220
+        let initialHeight: CGFloat = 330
+
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 440, height: 320),
+            contentRect: NSRect(x: 0, y: 0, width: initialWidth, height: initialHeight),
             styleMask: [.nonactivatingPanel, .borderless],
             backing: .buffered,
             defer: false
@@ -36,45 +42,31 @@ public final class HUDWindowController: NSObject {
         }
 
         let hostingView = NSHostingView(rootView: rootView)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 440, height: 320)
         panel.contentView = hostingView
         self.panel = panel
+
+        // Dynamically expand and slide window as subfolders cascade open
+        viewModel.$columns
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] cols in
+                guard let self = self, self.panel?.isVisible == true else { return }
+                self.updateLayoutForColumns(columnCount: cols.count, animated: true)
+            }
+            .store(in: &cancellables)
     }
 
     public func show(at mouseLocation: CGPoint, isCopyMode: Bool) {
         guard let panel = panel else { return }
 
-        logger.info("[QuiFi] Showing HUD panel at: \(mouseLocation.x), \(mouseLocation.y)")
+        logger.info("[QuiFi] Showing HUD panel at cursor: \(mouseLocation.x), \(mouseLocation.y)")
+        self.initialMouseLocation = mouseLocation
 
         viewModel.reloadPinnedRoots()
         viewModel.isCopyMode = isCopyMode
         viewModel.clearHover()
 
-        let width: CGFloat = 440
-        let height: CGFloat = 320
-        panel.setContentSize(NSSize(width: width, height: height))
+        updateLayoutForColumns(columnCount: viewModel.columns.count, animated: false)
 
-        // Position slightly offset from cursor so it doesn't immediately drop under cursor
-        var origin = CGPoint(x: mouseLocation.x + 20, y: mouseLocation.y - (height / 2))
-
-        // Screen boundary protection
-        if let screen = NSScreen.screens.first(where: { NSPointInRect(mouseLocation, $0.frame) }) ?? NSScreen.main {
-            let visible = screen.visibleFrame
-            if origin.x + width > visible.maxX {
-                origin.x = mouseLocation.x - width - 20
-            }
-            if origin.x < visible.minX {
-                origin.x = visible.minX + 15
-            }
-            if origin.y + height > visible.maxY {
-                origin.y = visible.maxY - height - 15
-            }
-            if origin.y < visible.minY {
-                origin.y = visible.minY + 15
-            }
-        }
-
-        panel.setFrameOrigin(origin)
         panel.alphaValue = 1.0
         panel.orderFrontRegardless()
     }
@@ -88,6 +80,57 @@ public final class HUDWindowController: NSObject {
 
     public func updateModifier(isCopyMode: Bool) {
         viewModel.isCopyMode = isCopyMode
+    }
+
+    private func updateLayoutForColumns(columnCount: Int, animated: Bool) {
+        guard let panel = panel else { return }
+
+        let count = max(1, columnCount)
+        let colWidth: CGFloat = 185
+        let spacing: CGFloat = 10
+        let horizontalPadding: CGFloat = 24
+        let targetHeight: CGFloat = 330
+
+        let targetWidth = (CGFloat(count) * colWidth) + (CGFloat(count - 1) * spacing) + horizontalPadding
+
+        let screen = NSScreen.screens.first(where: { NSPointInRect(initialMouseLocation, $0.frame) }) ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+
+        // Try placing the panel to the right of the initial mouse location
+        var originX = initialMouseLocation.x + 18
+        var originY = initialMouseLocation.y - (targetHeight / 2)
+
+        // If the cascade grows beyond the right screen edge, smoothly shift it left
+        let maxRight = visible.maxX - 16
+        if originX + targetWidth > maxRight {
+            originX = maxRight - targetWidth
+        }
+
+        // Clamp to left screen boundary
+        let minLeft = visible.minX + 16
+        if originX < minLeft {
+            originX = minLeft
+        }
+
+        // Clamp to vertical screen boundaries
+        if originY + targetHeight > visible.maxY - 12 {
+            originY = visible.maxY - targetHeight - 12
+        }
+        if originY < visible.minY + 12 {
+            originY = visible.minY + 12
+        }
+
+        let newFrame = NSRect(x: originX, y: originY, width: targetWidth, height: targetHeight)
+
+        if animated {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.22
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                panel.animator().setFrame(newFrame, display: true)
+            }
+        } else {
+            panel.setFrame(newFrame, display: true)
+        }
     }
 
     private func handleDrop(urls: [URL], targetFolder: FolderNode) {

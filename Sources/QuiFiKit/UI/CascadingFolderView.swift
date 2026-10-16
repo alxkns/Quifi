@@ -10,77 +10,82 @@ public struct CascadingFolderView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Header Bar
-            HStack {
-                Label {
-                    Text(viewModel.isCopyMode ? "Copy to..." : "Move to...")
-                        .font(.system(size: 13, weight: .bold))
-                } icon: {
-                    Image(systemName: viewModel.isCopyMode ? "plus.circle.fill" : "arrow.right.circle.fill")
-                        .foregroundColor(viewModel.isCopyMode ? .green : .accentColor)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            // Sleek, minimal header
+            HStack(spacing: 6) {
+                Image(systemName: viewModel.isCopyMode ? "plus.circle.fill" : "arrow.right.circle.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(viewModel.isCopyMode ? .green : .accentColor)
+
+                Text(viewModel.isCopyMode ? "Copy to" : "Move to")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundColor(viewModel.isCopyMode ? .green : .primary.opacity(0.85))
+
+                Text("•")
+                    .font(.system(size: 8))
+                    .foregroundColor(.secondary.opacity(0.4))
+
+                Text(viewModel.isCopyMode ? "⌥ Copy active" : "⌥ hold to copy")
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundColor(viewModel.isCopyMode ? .green.opacity(0.8) : .secondary.opacity(0.6))
 
                 Spacer()
-
-                if let currentTarget = viewModel.hoveredTarget {
-                    Text(currentTarget.name)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-
-                Text(viewModel.isCopyMode ? "⌥ Copy" : "⌘ Move")
-                    .font(.system(size: 10, weight: .semibold))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(viewModel.isCopyMode ? Color.green.opacity(0.2) : Color.accentColor.opacity(0.2))
-                    .foregroundColor(viewModel.isCopyMode ? .green : .accentColor)
-                    .cornerRadius(4)
             }
             .padding(.horizontal, 14)
-            .padding(.top, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 2)
 
-            Divider()
-                .padding(.horizontal, 10)
-
-            // Cascading Columns
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 12) {
-                    ForEach(Array(viewModel.columns.enumerated()), id: \.offset) { colIndex, folders in
-                        FolderColumnView(
-                            columnIndex: colIndex,
-                            folders: folders,
-                            selectedNode: colIndex < viewModel.selectedPath.count ? viewModel.selectedPath[colIndex] : nil,
-                            hoveredNode: viewModel.hoveredTarget,
-                            onHover: { node in
-                                viewModel.hoverOver(node: node, atColumnIndex: colIndex)
-                            },
-                            onDrop: { urls, node in
-                                onDropFilesToFolder?(urls, node)
-                            }
-                        )
-                    }
+            // Flowy, auto-expanding Miller-Columns
+            HStack(alignment: .top, spacing: 10) {
+                ForEach(Array(viewModel.columns.enumerated()), id: \.offset) { colIndex, folders in
+                    FolderColumnView(
+                        columnIndex: colIndex,
+                        columnTitle: titleForColumn(colIndex),
+                        folders: folders,
+                        selectedNode: colIndex < viewModel.selectedPath.count ? viewModel.selectedPath[colIndex] : nil,
+                        hoveredNode: viewModel.hoveredTarget,
+                        onHover: { node in
+                            viewModel.hoverOver(node: node, atColumnIndex: colIndex)
+                        },
+                        onDrop: { urls, node in
+                            onDropFilesToFolder?(urls, node)
+                        }
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .opacity
+                    ))
                 }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
             }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+            .animation(.spring(response: 0.28, dampingFraction: 0.82), value: viewModel.columns.count)
         }
-        .frame(minWidth: 260, minHeight: 220)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+                .shadow(color: .black.opacity(0.28), radius: 24, x: 0, y: 12)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.18), lineWidth: 1)
         )
+    }
+
+    private func titleForColumn(_ index: Int) -> String {
+        if index == 0 {
+            return "Favoriten"
+        }
+        if index - 1 < viewModel.selectedPath.count {
+            return viewModel.selectedPath[index - 1].name
+        }
+        return "Unterordner"
     }
 }
 
 struct FolderColumnView: View {
     let columnIndex: Int
+    let columnTitle: String
     let folders: [FolderNode]
     let selectedNode: FolderNode?
     let hoveredNode: FolderNode?
@@ -88,16 +93,19 @@ struct FolderColumnView: View {
     let onDrop: ([URL], FolderNode) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
+            // Column Header
             Text(columnTitle)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.secondary)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.secondary.opacity(0.8))
+                .lineLimit(1)
                 .textCase(.uppercase)
-                .padding(.horizontal, 6)
-                .padding(.bottom, 2)
+                .padding(.horizontal, 8)
+                .padding(.top, 4)
 
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 3) {
+            // Scrollable list of folders
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 2) {
                     ForEach(folders) { node in
                         FolderRowView(
                             node: node,
@@ -112,22 +120,20 @@ struct FolderColumnView: View {
                         )
                     }
                 }
+                .padding(2)
             }
             .frame(maxHeight: 280)
         }
-        .frame(width: 170)
+        .frame(width: 185)
         .padding(6)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.35))
         )
-    }
-
-    private var columnTitle: String {
-        if columnIndex == 0 {
-            return "Favorites"
-        }
-        return "Level \(columnIndex)"
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 }
 
@@ -145,22 +151,30 @@ struct FolderRowView: View {
                 .foregroundColor(isSelected || isHovered ? .accentColor : .secondary)
 
             Text(node.name)
-                .font(.system(size: 12, weight: isSelected || isHovered ? .semibold : .regular))
-                .foregroundColor(isSelected || isHovered ? .primary : .secondary)
+                .font(.system(size: 12, weight: isSelected || isHovered ? .medium : .regular))
+                .foregroundColor(isSelected || isHovered ? .primary : .primary.opacity(0.85))
                 .lineLimit(1)
                 .truncationMode(.middle)
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 9, weight: .bold))
-                .foregroundColor(.secondary.opacity(0.5))
+                .font(.system(size: 8, weight: .bold))
+                .foregroundColor(.secondary.opacity(0.4))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isHovered ? Color.accentColor.opacity(0.25) : (isSelected ? Color.accentColor.opacity(0.12) : Color.clear))
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(
+                    isHovered
+                        ? Color.accentColor.opacity(0.22)
+                        : (isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(isHovered ? Color.accentColor.opacity(0.35) : Color.clear, lineWidth: 1)
         )
         .contentShape(Rectangle())
         .onHover { isOver in
