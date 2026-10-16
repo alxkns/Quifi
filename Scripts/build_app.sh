@@ -12,8 +12,12 @@ RESOURCES_DIR="$CONTENTS_DIR/Resources"
 echo "🚀 Building $APP_NAME for macOS (Release mode)..."
 
 # Ensure developer SDK and plugins are discovered
-SDK_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-PLUGIN_PATH="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins"
+DEV_DIR="$(xcode-select -p 2>/dev/null || echo '/Applications/Xcode.app/Contents/Developer')"
+if [ ! -d "$DEV_DIR/Platforms/MacOSX.platform" ] && [ -d "/Applications/Xcode.app/Contents/Developer" ]; then
+    DEV_DIR="/Applications/Xcode.app/Contents/Developer"
+fi
+SDK_PATH="$DEV_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+PLUGIN_PATH="$DEV_DIR/Platforms/MacOSX.platform/Developer/usr/lib/swift/host/plugins"
 
 EXTRA_ARGS=()
 if [ -d "$SDK_PATH" ]; then
