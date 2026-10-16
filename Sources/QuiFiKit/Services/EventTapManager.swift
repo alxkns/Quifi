@@ -25,10 +25,21 @@ public final class EventTapManager {
     private var isHUDShown = false
     private var permissionTimer: Timer?
 
+    private var lastDragPasteboardChangeCount: Int = -1
+    private var isDraggingFiles = false
+    private var checkedChangeCount: Int = -1
+    private var checkedChangeCountHasFiles: Bool = false
+
     public init() {
+        lastDragPasteboardChangeCount = NSPasteboard(name: .drag).changeCount
+
         shakeDetector.onShakeDetected = { [weak self] in
             guard let self = self, self.isDragging, !self.isHUDShown else { return }
-            self.logger.info("[QuiFi] Shake gesture detected during drag!")
+            guard self.canTriggerForFiles() else {
+                self.logger.info("[QuiFi] Shake gesture detected, but not dragging files. Ignoring.")
+                return
+            }
+            self.logger.info("[QuiFi] Shake gesture detected during file drag!")
             let point = NSEvent.mouseLocation
             let isCopy = NSEvent.modifierFlags.contains(.option)
             self.isHUDShown = true
@@ -67,6 +78,12 @@ public final class EventTapManager {
             return
         }
 
+        lastDragPasteboardChangeCount = NSPasteboard(name: .drag).changeCount
+        isDragging = false
+        isDraggingFiles = false
+        checkedChangeCount = -1
+        checkedChangeCountHasFiles = false
+
         logger.info("[QuiFi] Starting event monitoring...")
         setupGlobalNSEventMonitors()
         setupCGEventTap()
@@ -96,6 +113,9 @@ public final class EventTapManager {
         }
 
         isDragging = false
+        isDraggingFiles = false
+        checkedChangeCount = -1
+        checkedChangeCountHasFiles = false
         shakeDetector.reset()
         logger.info("[QuiFi] Event monitoring stopped.")
     }
@@ -165,6 +185,13 @@ public final class EventTapManager {
         let mouseLocation = NSEvent.mouseLocation
         let prefs = PreferencesStore.shared.preferences
 
+        if !isDraggingFiles {
+            isDraggingFiles = checkIsDraggingFiles()
+        }
+
+        // Only process shake or modifier triggers if files are actively being dragged
+        guard isDraggingFiles else { return }
+
         if prefs.enableShakeTrigger && !isHUDShown {
             shakeDetector.sensitivity = prefs.shakeSensitivity
             shakeDetector.addPoint(x: mouseLocation.x)
@@ -185,7 +212,7 @@ public final class EventTapManager {
             self.delegate?.eventTapModifierChanged(isCopyModifierActive: isCopy)
         }
 
-        if isDragging && prefs.enableModifierTrigger && !isHUDShown {
+        if isDragging && prefs.enableModifierTrigger && !isHUDShown && canTriggerForFiles() {
             if isModifierActive(modifierFlags, target: prefs.triggerModifier) {
                 triggerHUD(at: NSEvent.mouseLocation, flags: modifierFlags)
             }
@@ -193,7 +220,11 @@ public final class EventTapManager {
     }
 
     private func handleMouseUp() {
+        lastDragPasteboardChangeCount = NSPasteboard(name: .drag).changeCount
         isDragging = false
+        isDraggingFiles = false
+        checkedChangeCount = -1
+        checkedChangeCountHasFiles = false
         shakeDetector.reset()
         DispatchQueue.main.async {
             self.delegate?.eventTapDidEndDrag()
@@ -208,6 +239,12 @@ public final class EventTapManager {
             let prefs = PreferencesStore.shared.preferences
 
             isDragging = true
+
+            if !isDraggingFiles {
+                isDraggingFiles = checkIsDraggingFiles()
+            }
+
+            guard isDraggingFiles else { return }
 
             if prefs.enableShakeTrigger && !isHUDShown {
                 shakeDetector.sensitivity = prefs.shakeSensitivity
@@ -230,7 +267,7 @@ public final class EventTapManager {
                 self.delegate?.eventTapModifierChanged(isCopyModifierActive: isCopy)
             }
 
-            if isDragging && prefs.enableModifierTrigger && !isHUDShown {
+            if isDragging && prefs.enableModifierTrigger && !isHUDShown && canTriggerForFiles() {
                 if matchesCGModifier(flags: flags, modifier: prefs.triggerModifier) {
                     triggerHUD(at: NSEvent.mouseLocation, isCopy: isCopy)
                 }
@@ -252,12 +289,47 @@ public final class EventTapManager {
 
     private func triggerHUD(at point: CGPoint, isCopy: Bool) {
         guard !isHUDShown else { return }
+        guard canTriggerForFiles() else {
+            logger.info("[QuiFi] Trigger attempt blocked: Not dragging files.")
+            return
+        }
         isHUDShown = true
         logger.info("[QuiFi] Triggering HUD at Cocoa position: \(point.x), \(point.y)")
 
         DispatchQueue.main.async {
             self.delegate?.eventTapTriggeredHUD(at: point, isCopyModifierActive: isCopy)
         }
+    }
+
+    /// Verifies if an active dragging session containing files is in progress.
+    public func canTriggerForFiles() -> Bool {
+        if isDraggingFiles { return true }
+        if checkIsDraggingFiles() {
+            isDraggingFiles = true
+            return true
+        }
+        return false
+    }
+
+    private func checkIsDraggingFiles() -> Bool {
+        let dragPasteboard = NSPasteboard(name: .drag)
+        let currentChangeCount = dragPasteboard.changeCount
+
+        // If the pasteboard changeCount hasn't changed since the last drag ended,
+        // no new dragging session has been initiated by any app (e.g. moving windows, selecting text).
+        guard currentChangeCount != lastDragPasteboardChangeCount else {
+            return false
+        }
+
+        // Cache result for current changeCount
+        if currentChangeCount == checkedChangeCount {
+            return checkedChangeCountHasFiles
+        }
+
+        let hasFiles = DragPasteboardHelper.pasteboardContainsFiles(dragPasteboard)
+        checkedChangeCount = currentChangeCount
+        checkedChangeCountHasFiles = hasFiles
+        return hasFiles
     }
 
     private func isModifierActive(_ flags: NSEvent.ModifierFlags, target: TriggerModifier) -> Bool {

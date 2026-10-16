@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import AppKit
 @testable import QuiFiKit
 
 struct QuiFiTests {
@@ -137,5 +138,67 @@ struct QuiFiTests {
         let prefs = try JSONDecoder().decode(Preferences.self, from: legacyJSON)
         #expect(prefs.menuBarIconStyle == .quifiLightning)
         #expect(prefs.shakeSensitivity == 30.0)
+    }
+
+    @Test func dragPasteboardHelperDetectsFiles() {
+        // Single file URL object
+        let pb = NSPasteboard.withUniqueName()
+        pb.clearContents()
+        let fileURL = URL(fileURLWithPath: "/Users/test/Documents/Report.pdf")
+        pb.writeObjects([fileURL as NSURL])
+        #expect(DragPasteboardHelper.pasteboardContainsFiles(pb))
+
+        // Multiple file URLs
+        let pbMulti = NSPasteboard.withUniqueName()
+        pbMulti.clearContents()
+        let urls = [
+            URL(fileURLWithPath: "/Users/test/1.txt") as NSURL,
+            URL(fileURLWithPath: "/Users/test/2.txt") as NSURL
+        ]
+        pbMulti.writeObjects(urls)
+        #expect(DragPasteboardHelper.pasteboardContainsFiles(pbMulti))
+
+        // Legacy NSFilenamesPboardType
+        let pbLegacy = NSPasteboard.withUniqueName()
+        pbLegacy.clearContents()
+        pbLegacy.setPropertyList(["/Users/test/archive.zip"], forType: NSPasteboard.PasteboardType("NSFilenamesPboardType"))
+        #expect(DragPasteboardHelper.pasteboardContainsFiles(pbLegacy))
+    }
+
+    @Test func dragPasteboardHelperDetectsPromisedFiles() {
+        let pbPromise = NSPasteboard.withUniqueName()
+        pbPromise.clearContents()
+        pbPromise.declareTypes([NSPasteboard.PasteboardType("com.apple.pasteboard.promised-file-url")], owner: nil)
+        #expect(DragPasteboardHelper.pasteboardContainsFiles(pbPromise))
+
+        let pbLegacyPromise = NSPasteboard.withUniqueName()
+        pbLegacyPromise.clearContents()
+        pbLegacyPromise.declareTypes([NSPasteboard.PasteboardType("NSFilesPromisePboardType")], owner: nil)
+        #expect(DragPasteboardHelper.pasteboardContainsFiles(pbLegacyPromise))
+    }
+
+    @Test func dragPasteboardHelperRejectsNonFiles() {
+        // Empty pasteboard
+        let pbEmpty = NSPasteboard.withUniqueName()
+        pbEmpty.clearContents()
+        #expect(!DragPasteboardHelper.pasteboardContainsFiles(pbEmpty))
+
+        // Plain text
+        let pbText = NSPasteboard.withUniqueName()
+        pbText.clearContents()
+        pbText.setString("Hello, World!", forType: .string)
+        #expect(!DragPasteboardHelper.pasteboardContainsFiles(pbText))
+
+        // Web URL (http / https)
+        let pbWeb = NSPasteboard.withUniqueName()
+        pbWeb.clearContents()
+        pbWeb.setString("https://apple.com/macos", forType: .URL)
+        #expect(!DragPasteboardHelper.pasteboardContainsFiles(pbWeb))
+
+        // Path string as plain text (not a file URL pboard type)
+        let pbPathText = NSPasteboard.withUniqueName()
+        pbPathText.clearContents()
+        pbPathText.setString("/Users/test/notes.txt", forType: .string)
+        #expect(!DragPasteboardHelper.pasteboardContainsFiles(pbPathText))
     }
 }
